@@ -1535,15 +1535,41 @@ function setView(v){
   document.getElementById('vtList').classList.toggle('active', !isGrid);
 }
 
-/* ===== ILMU CONNECTION ===== */
+/* ===== ILMU CONNECTION (persisted to this browser via localStorage) ===== */
+const ILMU_STORAGE_KEY = 'signal_ilmu_config';
 let ilmuConfig = { url:null, token:null, connected:false };
+
 function saveIlmu(){
   const url = document.getElementById('ilmuUrl').value.trim();
   const token = document.getElementById('ilmuToken').value.trim();
   if(!url){ document.getElementById('ilmuStatus').textContent = 'Enter a webhook URL first'; return; }
   ilmuConfig = { url, token, connected:true };
-  document.getElementById('ilmuStatus').innerHTML = '<span style="color:var(--teal);font-weight:600;">Connected</span> — assistant will ask ILMU';
+  try{ localStorage.setItem(ILMU_STORAGE_KEY, JSON.stringify({url, token})); }catch(e){ /* storage unavailable, connection still works this session */ }
+  markIlmuConnected();
+}
+function markIlmuConnected(){
+  document.getElementById('ilmuStatus').innerHTML = '<span style="color:var(--teal);font-weight:600;">Connected</span> — saved in this browser, assistant will ask ILMU · <a href="#" onclick="forgetIlmu();return false;" style="color:var(--text-dim);text-decoration:underline;">forget</a>';
   document.getElementById('botStatusLine').textContent = '● connected to ILMU';
+}
+function forgetIlmu(){
+  try{ localStorage.removeItem(ILMU_STORAGE_KEY); }catch(e){}
+  ilmuConfig = { url:null, token:null, connected:false };
+  document.getElementById('ilmuUrl').value = '';
+  document.getElementById('ilmuToken').value = '';
+  document.getElementById('ilmuStatus').textContent = 'Not connected — using built-in answers';
+  document.getElementById('botStatusLine').textContent = '● I can see everything in your feed';
+}
+function loadSavedIlmu(){
+  try{
+    const raw = localStorage.getItem(ILMU_STORAGE_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(!saved.url) return;
+    ilmuConfig = { url: saved.url, token: saved.token, connected: true };
+    document.getElementById('ilmuUrl').value = saved.url;
+    document.getElementById('ilmuToken').value = saved.token || '';
+    markIlmuConnected();
+  }catch(e){ /* nothing saved, or storage unavailable — stays disconnected */ }
 }
 async function testIlmu(){
   const el = document.getElementById('ilmuStatus');
@@ -1814,6 +1840,7 @@ renderSocialTrends();
 renderNews();
 renderYtl();
 renderCrisisZone();
+loadSavedIlmu();
 for(let i=0;i<6;i++) genMention();
 tick();
 setInterval(tick, 3500);
