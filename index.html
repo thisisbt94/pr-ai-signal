@@ -402,7 +402,12 @@
         <span class="vt" id="vtList" onclick="setView('list')">List</span>
       </div>
       <div class="filter-row" id="gridFilters"></div>
-      <div id="viewGrid"><div class="ig-grid" id="igGrid"></div></div>
+      <div id="viewGrid">
+        <div class="ig-grid" id="igGrid"></div>
+        <div style="text-align:center;margin-top:16px;">
+          <button class="dm-btn" id="gridLoadMore" style="display:none;" onclick="gridPageSize+=24;renderGrid();"></button>
+        </div>
+      </div>
       <div id="viewList" style="display:none;"><div class="panel"><div class="feed" id="mentionsFeed" style="max-height:640px;"></div></div></div>
     </div>
 
@@ -976,11 +981,36 @@ function mentionHTML(m){
 }
 
 function renderDashFeed(){
-  document.getElementById('dashFeed').innerHTML = allMentions.slice(0,8).map(mentionHTML).join('');
+  const shown = allMentions.slice(0,10);
+  let html = shown.map(mentionHTML).join('');
+  if(allMentions.length > shown.length){
+    html += `<div style="padding:14px 4px;text-align:center;">
+      <span style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;" onclick="goToBrowse()">See all ${allMentions.length} items in Browse →</span>
+    </div>`;
+  }
+  document.getElementById('dashFeed').innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12.5px;">Nothing yet — waiting on the first live pull.</div>';
 }
+
+let mentionsPageSize = 30;
 function renderMentionsFeed(){
   const filtered = searchResults();
-  document.getElementById('mentionsFeed').innerHTML = filtered.slice(0,60).map(mentionHTML).join('') || '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12.5px;">No mentions yet for this filter.</div>';
+  const shown = filtered.slice(0, mentionsPageSize);
+  let html = shown.map(mentionHTML).join('');
+  if(filtered.length > shown.length){
+    html += `<div style="padding:16px 4px;text-align:center;">
+      <button class="dm-btn" style="display:inline-block;" onclick="mentionsPageSize+=30;renderMentionsFeed();">Show more (${filtered.length - shown.length} remaining)</button>
+    </div>`;
+  }
+  document.getElementById('mentionsFeed').innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12.5px;">No mentions yet for this filter.</div>';
+}
+function goToBrowse(){
+  document.querySelector('.navitem[data-page="grid"]').click();
+}
+function goToBrowseWithQuery(q){
+  document.querySelector('.navitem[data-page="grid"]').click();
+  const box = document.getElementById('archiveSearch');
+  if(box){ box.value = q; }
+  runSearch();
 }
 
 /* ===== FILTERS ===== */
@@ -998,7 +1028,7 @@ function renderTopics(){
     const max = Math.max(...spark);
     const points = spark.map((v,idx)=> `${idx*13},${24-(v/max)*22}`).join(' ');
     return `<tr>
-      <td><strong>${t.name}</strong></td>
+      <td><strong style="cursor:pointer;color:var(--accent);" onclick="goToBrowseWithQuery('${t.name.replace(/'/g,"")}')" title="See coverage of this topic">${t.name}</strong></td>
       <td class="mono">${t.count}</td>
       <td><span class="m-tag sent-pos" style="font-size:10.5px;">Mostly positive</span></td>
       <td><svg class="sparkline" viewBox="0 0 80 24"><polyline points="${points}" fill="none" stroke="#0e9c86" stroke-width="1.5"/></svg></td>
@@ -1024,7 +1054,7 @@ document.getElementById('newTopicInput').addEventListener('keydown', e=>{ if(e.k
 function renderInfluencers(){
   const top = [...allMentions].sort((a,b)=>b.engagement-a.engagement).slice(0,5);
   document.getElementById('influencerList').innerHTML = top.map(m=>`
-    <div class="influencer-row">
+    <div class="influencer-row" style="cursor:pointer;" onclick="openDetail('${m.id}')">
       <div class="inf-av">${m.author.replace('@','').slice(0,2).toUpperCase()}</div>
       <div class="inf-info"><div class="inf-name">${m.author}</div><div class="inf-meta">${m.platform} · ${m.topic}</div></div>
       <div class="inf-eng">${m.engagement}</div>
@@ -1211,7 +1241,8 @@ const spokespeople = [
 
 function renderNews(){
   document.getElementById('clusterList').innerHTML = newsClusters.map((c,i)=>`
-    <div class="data-row"><div class="drl"><strong>${i+1}. ${c.headline}</strong><div class="sub">${c.outlets} outlets covering</div></div>
+    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${c.headline.slice(0,30).replace(/'/g,"")}')" title="See related coverage">
+    <div class="drl"><strong>${i+1}. ${c.headline}</strong><div class="sub">${c.outlets} outlets covering</div></div>
     <div style="display:flex;align-items:center;gap:10px;"><span class="m-tag ${sentClass(c.sentiment)}">${sentLabel(c.sentiment)}</span><span class="drv">${c.score}</span></div></div>`).join('');
   document.getElementById('sovNewsList').innerHTML = sovNews.map(s=>`
     <div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${s.name}</span><span class="mono">${s.pct}%</span></div><div class="sov-bar"><div class="sov-seg" style="width:${s.pct}%;background:${s.color};"></div></div></div>`).join('');
@@ -1243,9 +1274,11 @@ function tileTint(i){ return tileTints[i % tileTints.length]; }
 function tileText(i){ return ['#7a1734','#123c73','#0a5b4d','#6b4409','#3a3d49'][i % 5]; }
 
 const strengthTint = {'st-strongpos':['#d6f3ee','#0a5b4d'],'st-pos':['#e0f6f1','#0e9c86'],'st-urgent':['#fbe1ea','#c22458'],'st-watch':['#fbedd9','#9c6a12'],'st-neutral':['#f0f2f6','#4a4f5c']};
+let gridPageSize = 24;
 function renderGrid(){
-  const items = searchResults().slice(0,24);
-  document.getElementById('igGrid').innerHTML = items.map((m,i)=>{
+  const all = searchResults();
+  const items = all.slice(0, gridPageSize);
+  let html = items.map((m,i)=>{
     const s = strengthOf(m);
     const [bg,fg] = strengthTint[s.cls];
     return `
@@ -1258,7 +1291,13 @@ function renderGrid(){
       <span class="ig-sent" style="background:${sentDot(m.sentiment)};"></span>
       <div class="ig-eng"><span>${String(m.author).slice(0,18)}</span><span>${s.label}</span></div>
     </div>`;
-  }).join('') || '<div style="padding:30px;color:var(--text-dim);font-size:12.5px;">No posts pass the current filter — try lowering the threshold on the Dashboard.</div>';
+  }).join('');
+  document.getElementById('igGrid').innerHTML = html || '<div style="padding:30px;color:var(--text-dim);font-size:12.5px;">No posts pass the current filter — try lowering the threshold on the Dashboard.</div>';
+  const loadMoreEl = document.getElementById('gridLoadMore');
+  if(loadMoreEl){
+    loadMoreEl.style.display = all.length > items.length ? 'block' : 'none';
+    loadMoreEl.textContent = `Show more (${all.length - items.length} remaining)`;
+  }
 }
 
 /* ===== DETAIL MODAL ===== */
@@ -1336,16 +1375,16 @@ const rivalActivity = [
 ];
 function renderYtl(){
   document.getElementById('segmentTable').innerHTML = ytlSegments.map(s=>`
-    <tr>
+    <tr style="cursor:pointer;" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}')" title="See coverage related to this segment">
       <td><strong>${s.seg}</strong></td>
       <td style="font-size:11.5px;color:var(--text-dim);">${s.ytl}</td>
-      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;">${r}</span>`).join('')}</td>
+      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;cursor:pointer;" onclick="event.stopPropagation();goToBrowseWithQuery('${r.replace(/'/g,"")}')">${r}</span>`).join('')}</td>
       <td class="mono">${Math.floor(Math.random()*20)+3}</td>
     </tr>`).join('');
 
   const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
   document.getElementById('rivalList').innerHTML = rivalActivity.map(r=>`
-    <div class="data-row"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
+    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${r.name.replace(/'/g,"")}')"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
 
   const ytlCount = allMentions.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text)).length;
   document.getElementById('ytlMentions').textContent = ytlCount;
@@ -1841,6 +1880,8 @@ function clearSearch(){
   runSearch();
 }
 function runSearch(){
+  gridPageSize = 24;
+  mentionsPageSize = 30;
   const box = document.getElementById('archiveSearch');
   if(box) searchQuery = box.value.trim();
   const clr = document.getElementById('searchClear');
