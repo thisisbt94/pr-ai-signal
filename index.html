@@ -295,7 +295,7 @@
     <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitor News</div>
     <div class="navitem" data-page="trends"><span class="ic">↗</span>Trends</div>
     <div class="navitem" data-page="settings"><span class="ic">⚙</span>Settings</div>
-    <div class="sidebar-foot"><strong style="color:var(--text-dim);">Green "LIVE" tag</strong> = a real news article, pulled just now.<br><strong style="color:var(--text-dim);">Grey "DEMO" tag</strong> = example social post, for showing how it looks.</div>
+    <div class="sidebar-foot">Showing <strong style="color:var(--text-dim);">real news + Reddit</strong> only, refreshed every minute. Demo social examples are off by default — turn them on in Settings if you want to see what X/IG/FB coverage would look like once connected.</div>
   </div>
 
   <div class="main">
@@ -521,6 +521,27 @@
     <div class="page" id="page-settings">
       <div class="page-title"><div><h2>Settings</h2><p>What we track, how you get notified, and the assistant connection.</p></div></div>
 
+      <div class="section-head">Live data sources</div>
+      <div class="panel" style="margin-bottom:20px;">
+        <p style="font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;">
+          News, Reddit, and Hacker News are already live — no setup needed. YouTube needs a free API key
+          (from <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--accent);">Google Cloud Console</a>, no cost) if you want video coverage too.
+          Instagram/Facebook/X have no free path — see the DEMO toggle below for what that would look like.
+        </p>
+        <div class="field-row" style="flex-direction:column;align-items:stretch;gap:10px;">
+          <input type="text" id="youtubeKeyInput" placeholder="YouTube Data API key (optional, free)" style="width:100%;">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-solid" onclick="saveYoutubeKey()">Save key</button>
+            <span id="youtubeKeyStatus" style="font-size:11.5px;color:var(--text-dim);">No key saved — YouTube results are skipped</span>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;">
+            <input type="checkbox" id="demoModeToggle" onchange="setDemoMode(this.checked)"> Show example social posts (clearly labeled DEMO — not real, for visualising what X/IG/FB coverage would look like)
+          </label>
+        </div>
+      </div>
+
       <div class="section-head">Connect ILMU (smarter answers)</div>
       <div class="panel" style="margin-bottom:20px;">
         <p style="font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;">
@@ -615,7 +636,11 @@
     <div class="dm-section-label">Also covered by</div>
     <div id="dmRelated"></div>
     <div class="dm-actions">
-      <button class="dm-btn primary" onclick="dmSummarise()">Summarise with assistant</button>
+      <button class="dm-btn primary" onclick="dmSummarise()">Summarise</button>
+      <button class="dm-btn" onclick="dmCompareCoverage()">Compare coverage</button>
+      <button class="dm-btn" onclick="dmNextSteps()">What's next?</button>
+    </div>
+    <div class="dm-actions" style="margin-top:8px;">
       <button class="dm-btn" id="dmOpenLink">Open source</button>
     </div>
   </div>
@@ -631,13 +656,13 @@
       <button class="bot-close" onclick="toggleBot()">✕</button>
     </div>
     <div class="bot-body" id="botBody">
-      <div class="bot-bubble bot">Hi Bradley. Ask me anything about what's happening — in plain English. Try one below, or type your own question.</div>
+      <div class="bot-bubble bot">Hi Bradley. I can summarise coverage, compare what different sources are saying about the same story, and tell you what to do next — just ask in plain English.</div>
     </div>
     <div class="bot-quick">
       <span class="bot-chip" onclick="botAsk('day')">Tell me my day</span>
       <span class="bot-chip" onclick="botAsk('top')">Worth my time</span>
-      <span class="bot-chip" onclick="botAsk('action')">What should I do?</span>
-      <span class="bot-chip" onclick="botAsk('negative')">Anything bad?</span>
+      <span class="bot-chip" onclick="botAsk('coverage')">Other coverage</span>
+      <span class="bot-chip" onclick="botAsk('action')">What's next?</span>
     </div>
     <div class="bot-input">
       <input type="text" id="botInput" placeholder="e.g. what should I care about today?">
@@ -797,13 +822,24 @@ function passesFilter(item){
 
 let filteredOutCount = 0;
 
-/* ===== REAL NEWS INGESTION (GDELT + Hacker News — free, keyless, CORS-open) ===== */
+/* ===== REAL NEWS INGESTION — GDELT, Hacker News, Reddit — all free, keyless, CORS-open from a browser ===== */
 const seenUrls = new Set();
+
+// Very small keyword-based sentiment pass so real items aren't stuck at "Neutral" forever.
+// This is NOT a replacement for real AI scoring (that's ILMU's job once connected) — it's a
+// better-than-nothing default so strength badges mean something on real data too.
+const POS_WORDS = /win|record|growth|surge|boost|partnership|award|success|strong|positive|profit|expand|breakthrough|milestone|approve/i;
+const NEG_WORDS = /slump|loss|fall|drop|criti[cz]|concern|risk|delay|fail|controvers|lawsuit|fine|probe|investigat|cut|scandal|slam/i;
+function quickSentiment(text){
+  if(POS_WORDS.test(text) && !NEG_WORDS.test(text)) return 'pos';
+  if(NEG_WORDS.test(text) && !POS_WORDS.test(text)) return 'neg';
+  return 'neu';
+}
 
 async function fetchGdelt(topic){
   try{
     const q = encodeURIComponent('"'+topic+'"');
-    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&format=json&maxrecords=6&sort=datedesc&timespan=24h`;
+    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&format=json&maxrecords=10&sort=datedesc&timespan=48h`;
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
@@ -813,7 +849,7 @@ async function fetchGdelt(topic){
       url: a.url,
       platform: 'News',
       topic, real: true,
-      sentiment: 'neu',
+      sentiment: quickSentiment(a.title||''),
       engagement: '—',
       time: (a.seendate||'').replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
     }));
@@ -822,7 +858,7 @@ async function fetchGdelt(topic){
 
 async function fetchHN(topic){
   try{
-    const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(topic)}&tags=story&hitsPerPage=4`;
+    const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(topic)}&tags=story&hitsPerPage=5`;
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
@@ -832,9 +868,55 @@ async function fetchHN(topic){
       url: h.url || ('https://news.ycombinator.com/item?id='+h.objectID),
       platform: 'News',
       topic, real: true,
-      sentiment: 'neu',
+      sentiment: quickSentiment(h.title||''),
       engagement: (h.points||0)+' pts · '+(h.num_comments||0)+' cmts',
       time: h.created_at ? new Date(h.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'today'
+    }));
+  }catch(e){ return []; }
+}
+
+async function fetchReddit(topic){
+  try{
+    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(topic)}&sort=new&limit=6&t=week`;
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return (data.data?.children||[]).map(c=>{
+      const d = c.data;
+      return {
+        author: 'r/'+d.subreddit,
+        text: d.title,
+        url: 'https://reddit.com'+d.permalink,
+        platform: 'Reddit',
+        topic, real: true,
+        sentiment: quickSentiment(d.title||''),
+        engagement: (d.ups||0)+(d.num_comments||0),
+        time: d.created_utc ? new Date(d.created_utc*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'today'
+      };
+    });
+  }catch(e){
+    // Reddit's CORS policy is inconsistent across regions/browsers — fails silently, GDELT+HN still cover the gap
+    return [];
+  }
+}
+
+async function fetchYouTube(topic){
+  const key = (localStorage.getItem('signal_youtube_key')||'').trim();
+  if(!key) return [];
+  try{
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=4&q=${encodeURIComponent(topic)}&key=${key}`;
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return (data.items||[]).map(v=>({
+      author: v.snippet.channelTitle,
+      text: v.snippet.title,
+      url: 'https://www.youtube.com/watch?v='+v.id.videoId,
+      platform: 'YouTube',
+      topic, real: true,
+      sentiment: quickSentiment(v.snippet.title||''),
+      engagement: '—',
+      time: v.snippet.publishedAt ? new Date(v.snippet.publishedAt).toLocaleDateString() : 'today'
     }));
   }catch(e){ return []; }
 }
@@ -842,11 +924,11 @@ async function fetchHN(topic){
 async function pullRealNews(){
   const banner = document.getElementById('realStatus');
   if(banner) banner.textContent = 'fetching live news…';
-  const targets = topics.slice(0,4).map(t=>t.name);
+  const targets = topics.map(t=>t.name); // every tracked topic, not just the first few
   let added = 0;
   for(const t of targets){
-    const [g,h] = await Promise.all([fetchGdelt(t), fetchHN(t)]);
-    for(const item of [...g,...h]){
+    const [g,h,r,y] = await Promise.all([fetchGdelt(t), fetchHN(t), fetchReddit(t), fetchYouTube(t)]);
+    for(const item of [...g,...h,...r,...y]){
       if(seenUrls.has(item.url)) continue;
       seenUrls.add(item.url);
       if(!passesFilter(item)){ filteredOutCount++; continue; }
@@ -856,9 +938,9 @@ async function pullRealNews(){
       added++;
     }
   }
-  if(allMentions.length > 150) allMentions.length = 150;
-  if(banner) banner.textContent = added ? `live news updated · ${added} new real articles` : 'live news up to date';
-  renderDashFeed(); renderMentionsFeed(); renderGrid(); renderKpis();
+  if(allMentions.length > 250) allMentions.length = 250;
+  if(banner) banner.textContent = added ? `live news updated · ${added} new real items` : 'live news up to date';
+  renderDashFeed(); renderMentionsFeed(); renderGrid(); renderKpis(); renderYtl();
 }
 
 function sentClass(s){ return s==='pos'?'sent-pos':s==='neg'?'sent-neg':'sent-neu'; }
@@ -1334,11 +1416,12 @@ function parseQuery(q){
 
   // intent
   if(/my day|tell me my|brief|what.*(should|need).*(know|care)|catch me up|whats happening|what's happening|morning/.test(s)) r.intent='day';
+  else if(/other (source|outlet|coverage)|who else|different outlet|anyone else|else (report|cover|say|writ)|consensus|cross.?check|also cover/.test(s)) r.intent='coverage';
   else if(/worth my time|top stor|most important|biggest|priorit|what matters/.test(s)) r.intent='top';
   else if(/summar|explain|tell me about|what.*saying|recap/.test(s)) r.intent='summarise';
   else if(/how many|count|volume|how much/.test(s)) r.intent='count';
-  else if(/should i|what do i do|recommend|advice|action|respond/.test(s)) r.intent='action';
-  else if(/compar|versus|vs\b|against|competitor|rival/.test(s)) r.intent='compare';
+  else if(/should i|what do i do|next step|what now|recommend|advice|\baction\b|respond/.test(s)) r.intent='action';
+  else if(/compar.*(competitor|rival|tenaga|gamuda|maxis)|versus|vs\b|against|competitor|rival/.test(s)) r.intent='compare';
   else if(r.sentiment==='neg') r.intent='negative';
   else if(/trend|rising|growing|momentum/.test(s)) r.intent='trend';
   else if(/last week|last month|past|history|historic|back in|over time|since|previously|used to|earlier|archive/.test(s)) r.intent='history';
@@ -1419,6 +1502,34 @@ function smartAnswer(q){
       (items.filter(m=>m.sentiment==='neg').length ? `\n\n${items.filter(m=>m.sentiment==='neg').length} of these are negative.` : '');
   }
 
+  if(p.intent==='coverage'){
+    // Compares how DIFFERENT sources are covering the same story — not just a list, a synthesis.
+    const topic = p.topic || byTopic[0]?.name;
+    if(!topic) return `Nothing to compare yet — try again once a few items have come in.`;
+    const covering = all.filter(m=>m.topic===topic);
+    if(covering.length < 2){
+      return `Only one source has covered "${topic}" so far (${covering[0]?.author || 'unknown'}). Nothing to cross-check against yet — worth revisiting once more coverage lands.`;
+    }
+    const bySource = {};
+    covering.forEach(m=>{ if(!bySource[m.author]) bySource[m.author] = m; });
+    const uniqueSources = Object.values(bySource);
+    const posN = uniqueSources.filter(m=>m.sentiment==='pos').length;
+    const negN = uniqueSources.filter(m=>m.sentiment==='neg').length;
+    const neuN = uniqueSources.filter(m=>m.sentiment==='neu').length;
+
+    let consensus;
+    if(posN === uniqueSources.length) consensus = `Every source agrees — coverage is uniformly positive. Low risk of a mixed narrative.`;
+    else if(negN === uniqueSources.length) consensus = `Every source agrees — coverage is uniformly negative. This is a consistent narrative problem, not an isolated complaint.`;
+    else if(posN > 0 && negN > 0) consensus = `Sources disagree: ${posN} positive vs ${negN} negative. That split itself is worth noting — it means the story hasn't settled into one narrative yet, which is often the moment to shape it.`;
+    else consensus = `Mostly neutral/factual coverage (${neuN} of ${uniqueSources.length} sources) — no strong narrative has formed either way yet.`;
+
+    const bySourceLines = topByRelevance(uniqueSources, 5).map(m =>
+      `• ${m.author} (${m.platform}): ${sentLabel(m.sentiment)} — "${m.text.slice(0,80)}${m.text.length>80?'…':''}"`
+    ).join('\n');
+
+    return `"${topic}" — ${uniqueSources.length} sources covering this:\n\n${bySourceLines}\n\n${consensus}`;
+  }
+
   if(p.intent==='count'){
     return `${items.length} items for ${scopeLabel(p)}.\n\nBreakdown: ${items.filter(m=>m.sentiment==='pos').length} positive, ${items.filter(m=>m.sentiment==='neu').length} neutral, ${items.filter(m=>m.sentiment==='neg').length} negative. ${items.filter(m=>m.real).length} are live news.`;
   }
@@ -1432,19 +1543,37 @@ function smartAnswer(q){
   }
 
   if(p.intent==='action'){
-    const topNeg = topByRelevance(neg,1)[0];
-    let out = `Based on what's in the feed:\n\n`;
-    if(topNeg && (topNeg.relevance||0) >= 60){
-      out += `1. Respond to this — it's negative and from a credible source:\n${line(topNeg)}\n\n`;
-    } else if(topNeg){
-      out += `1. Monitor, don't respond yet — the negative items are low-credibility sources.\n\n`;
+    // If scoped to a topic/item context, answer for that specifically; otherwise answer for the whole feed.
+    const pool = items.length ? items : all;
+    const topNeg = topByRelevance(pool.filter(m=>strengthOf(m).urgent), 1)[0];
+    const openCount = pool.filter(m=>strengthOf(m).urgent && getCaseStatus(m.id)!=='resolved' && getCaseStatus(m.id)!=='responding').length;
+    let out = `Here's what I'd do${p.topic ? ' about '+p.topic : ''}:\n\n`;
+    let step = 1;
+
+    if(topNeg){
+      out += `${step}. Respond — this is negative and from a credible source:\n${line(topNeg)}\n   Mark it "Responding" once your team is on it, so it drops off the crisis banner.\n\n`;
+      step++;
+      const covering = all.filter(m=>m.topic===topNeg.topic);
+      if(covering.length > 1){
+        out += `${step}. Check who else is running this story before you respond — ${covering.length} sources have it. Ask me "other coverage of ${topNeg.topic}" to see if it's one outlet or a real trend.\n\n`;
+        step++;
+      }
     } else {
-      out += `1. Nothing needs a response today.\n\n`;
+      out += `${step}. Nothing needs an urgent response${p.topic ? ' on this topic' : ''} right now.\n\n`;
+      step++;
     }
-    const topPos = topByRelevance(all.filter(m=>m.sentiment==='pos'),1)[0];
-    if(topPos) out += `2. Amplify this — strong positive coverage worth sharing:\n${line(topPos)}\n\n`;
-    out += `3. Keep watching ${byTopic[0]?.name} — it's your busiest topic today.`;
-    return out;
+
+    const topPos = topByRelevance(pool.filter(m=>m.sentiment==='pos'), 1)[0];
+    if(topPos){
+      out += `${step}. Worth amplifying — strong positive coverage:\n${line(topPos)}\n\n`;
+      step++;
+    }
+
+    if(!p.topic){
+      out += `${step}. Keep an eye on ${byTopic[0]?.name} — it's your busiest topic today.`;
+      if(openCount > 1) out += ` You also have ${openCount} other items still unactioned — check the Today page's crisis banner.`;
+    }
+    return out.trim();
   }
 
   if(p.intent==='compare'){
@@ -1482,7 +1611,7 @@ function smartAnswer(q){
       `For a proper look, open Browse & search, type your term, and pick a date range — you'll get a mentions-over-time chart alongside the results.`;
   }
 
-  return `I can help with things like:\n\n• "Tell me my day"\n• "Top stories worth my time"\n• "Summarise YTL Power"\n• "Any negative coverage on Instagram?"\n• "What should I do about it?"\n• "How are we doing vs Gamuda?"\n• "What happened with data centres last month?"\n\nJust ask in plain English.`;
+  return `I can help with things like:\n\n• "Tell me my day" — the morning briefing\n• "Summarise YTL Power" — what's being said about a topic\n• "Other coverage of [topic]" — how different sources compare on the same story\n• "What's next?" — concrete recommendations, not just a summary\n• "Any negative coverage on Instagram?"\n• "How are we doing vs Gamuda?"\n• "What happened with data centres last month?"\n\nJust ask in plain English.`;
 }
 
 function botAsk(kind){
@@ -1528,6 +1657,18 @@ function dmSummarise(){
   document.getElementById('botPanel').classList.remove('hidden');
   botSendText('Summarise '+currentDetail.topic);
 }
+function dmCompareCoverage(){
+  if(!currentDetail) return;
+  closeDetail();
+  document.getElementById('botPanel').classList.remove('hidden');
+  botSendText('Other coverage of '+currentDetail.topic);
+}
+function dmNextSteps(){
+  if(!currentDetail) return;
+  closeDetail();
+  document.getElementById('botPanel').classList.remove('hidden');
+  botSendText("What's next for "+currentDetail.topic);
+}
 
 
 /* ===== VIEW TOGGLE (Browse) ===== */
@@ -1537,6 +1678,25 @@ function setView(v){
   document.getElementById('viewList').style.display = isGrid?'none':'block';
   document.getElementById('vtGrid').classList.toggle('active', isGrid);
   document.getElementById('vtList').classList.toggle('active', !isGrid);
+}
+
+
+/* ===== YOUTUBE KEY (optional, saved locally, same pattern as ILMU) ===== */
+function saveYoutubeKey(){
+  const key = document.getElementById('youtubeKeyInput').value.trim();
+  const status = document.getElementById('youtubeKeyStatus');
+  if(!key){ try{ localStorage.removeItem('signal_youtube_key'); }catch(e){} status.textContent = 'No key saved — YouTube results are skipped'; return; }
+  try{ localStorage.setItem('signal_youtube_key', key); }catch(e){}
+  status.innerHTML = '<span style="color:var(--teal);font-weight:600;">Saved</span> — YouTube results will appear on the next refresh';
+}
+function loadYoutubeKey(){
+  try{
+    const key = localStorage.getItem('signal_youtube_key');
+    if(key){
+      document.getElementById('youtubeKeyInput').value = key;
+      document.getElementById('youtubeKeyStatus').innerHTML = '<span style="color:var(--teal);font-weight:600;">Saved</span> — YouTube results included in live pulls';
+    }
+  }catch(e){}
 }
 
 /* ===== ILMU CONNECTION (persisted to this browser via localStorage) ===== */
@@ -1883,8 +2043,15 @@ function exportDigest(){
 }
 
 /* ===== MAIN LOOP ===== */
+// Demo social posts are OFF by default now — the feed leads with real news/Reddit,
+// not a constant stream of fabricated posts. Toggle in Settings if you want to see
+// what the social layer would look like once a real listening tool is connected.
+let demoMode = (localStorage.getItem('signal_demo_mode') === 'on');
+
 function tick(){
-  for(let attempt=0; attempt<4; attempt++){ if(genMention()) break; }
+  if(demoMode){
+    for(let attempt=0; attempt<4; attempt++){ if(genMention()) break; }
+  }
   renderDashFeed();
   renderMentionsFeed();
   renderTopics();
@@ -1897,6 +2064,21 @@ function tick(){
   renderCrisisZone();
 }
 
+function setDemoMode(on){
+  demoMode = on;
+  try{ localStorage.setItem('signal_demo_mode', on ? 'on' : 'off'); }catch(e){}
+  if(!on){
+    // strip existing demo items so switching off actually clears the noise immediately
+    const before = allMentions.length;
+    allMentions = allMentions.filter(m=>m.real);
+    mentionsToday = allMentions.length ? mentionsToday - (before - allMentions.length) : mentionsToday;
+    if(mentionsToday < 0) mentionsToday = allMentions.length;
+  } else {
+    for(let i=0;i<6;i++) genMention();
+  }
+  tick();
+}
+
 initCharts();
 renderTopics();
 renderAiTrends();
@@ -1905,11 +2087,13 @@ renderNews();
 renderYtl();
 renderCrisisZone();
 loadSavedIlmu();
-for(let i=0;i<6;i++) genMention();
+loadYoutubeKey();
+document.getElementById('demoModeToggle').checked = demoMode;
+if(demoMode){ for(let i=0;i<6;i++) genMention(); }
 tick();
 setInterval(tick, 3500);
 pullRealNews();
-setInterval(pullRealNews, 90000);
+setInterval(pullRealNews, 60000); // every minute — the closest to "live" a free stack can honestly do
 </script>
 
 </body>
