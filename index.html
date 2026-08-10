@@ -228,6 +228,52 @@
 
   .export-btn{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);}
   .export-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* ===== V3 WAYFINDING ===== */
+  .brand{cursor:pointer;position:relative;}
+  .brand:hover h1{color:var(--accent);}
+  .brand-home{font-size:9px;color:var(--text-dim2);opacity:0;transition:opacity .15s;text-transform:uppercase;letter-spacing:.06em;margin-left:2px;}
+  .brand:hover .brand-home{opacity:1;}
+
+  .nav-group{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-dim2);font-weight:700;padding:16px 10px 6px;}
+  .nav-count{margin-left:auto;font-size:10px;color:var(--text-dim2);font-family:'IBM Plex Mono',monospace;}
+  .navitem.active .nav-count{color:var(--accent);}
+  .nav-pill{margin-left:auto;font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;background:var(--amber-dim);color:var(--amber);padding:2px 6px;border-radius:20px;font-weight:700;}
+  .navitem{position:relative;}
+  .navitem.active::before{content:'';position:absolute;left:-14px;top:8px;bottom:8px;width:3px;background:var(--accent);border-radius:0 3px 3px 0;}
+
+  .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;min-width:0;}
+  .crumb-home{color:var(--text-dim);cursor:pointer;font-weight:600;flex-shrink:0;}
+  .crumb-home:hover{color:var(--accent);}
+  .crumb-sep{color:var(--text-dim2);flex-shrink:0;}
+  .crumb-current{font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .crumb-filter{background:var(--accent-dim);color:var(--accent);padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .crumb-filter .x{cursor:pointer;opacity:.7;}
+  .crumb-filter .x:hover{opacity:1;}
+
+  /* Context bar — tells you WHY you're looking at this and what to do next */
+  .context-bar{display:flex;align-items:flex-start;gap:14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin-bottom:18px;}
+  .context-bar .cb-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+  .context-bar .cb-body{flex:1;min-width:0;}
+  .context-bar h5{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .context-bar p{font-size:12px;color:var(--text-dim);line-height:1.55;}
+  .context-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .ctx-btn{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:6px 12px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--text);}
+  .ctx-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .ctx-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .ctx-btn.primary:hover{color:#fff;opacity:.9;}
+
+  /* Section footer — nothing dead-ends */
+  .next-steps{background:var(--surface-2);border-radius:10px;padding:16px 20px;margin-top:26px;}
+  .next-steps h5{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:700;margin-bottom:10px;}
+  .next-steps .ns-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .ns-link{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 13px;font-size:12px;cursor:pointer;color:var(--text);font-weight:500;}
+  .ns-link:hover{border-color:var(--accent);color:var(--accent);}
+
+  .preview-banner{display:flex;align-items:center;gap:12px;background:var(--amber-dim);border:1px solid var(--amber);border-radius:10px;padding:14px 18px;margin-bottom:20px;}
+  .preview-banner .pb-i{font-size:18px;color:var(--amber);flex-shrink:0;}
+  .preview-banner strong{font-size:13px;display:block;margin-bottom:2px;}
+  .preview-banner span{font-size:12px;color:var(--text-dim);line-height:1.5;}
   .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 
   .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
@@ -289,20 +335,30 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="shell">
   <div class="sidebar">
-    <div class="brand"><div class="dot"></div><h1>Signal</h1></div>
-    <div class="navitem active" data-page="dash"><span class="ic">◆</span>Today</div>
-    <div class="navitem" data-page="grid"><span class="ic">▤</span>Browse</div>
-    <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitor News</div>
-    <div class="navitem" data-page="trends"><span class="ic">↗</span>Trends</div>
+    <div class="brand" onclick="goHome()" title="Back to Today">
+      <div class="dot"></div><h1>Signal</h1>
+      <span class="brand-home">home</span>
+    </div>
+    <div class="nav-group">Live data</div>
+    <div class="navitem active" data-page="dash"><span class="ic">◆</span>Today<span class="nav-count" id="navCountToday"></span></div>
+    <div class="navitem" data-page="grid"><span class="ic">▤</span>Browse &amp; Search<span class="nav-count" id="navCountBrowse"></span></div>
+    <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitors</div>
+    <div class="nav-group">Needs a data source</div>
+    <div class="navitem" data-page="trends"><span class="ic">↗</span>Trends<span class="nav-pill">preview</span></div>
+    <div class="nav-group">Setup</div>
     <div class="navitem" data-page="settings"><span class="ic">⚙</span>Settings</div>
-    <div class="sidebar-foot">Showing <strong style="color:var(--text-dim);">real news + Reddit</strong> only, refreshed every minute. Demo social examples are off by default — turn them on in Settings if you want to see what X/IG/FB coverage would look like once connected.</div>
+    <div class="sidebar-foot">Live: <strong style="color:var(--text-dim);">news + Reddit</strong>, refreshed each minute.<br>Sections marked <em>preview</em> use example data until a source is connected.</div>
   </div>
 
   <div class="main">
     <div class="topbar">
-      <div style="display:flex;align-items:center;gap:12px;">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;">
         <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-        <strong style="font-size:13px;">PR Tracking — 6 topics live</strong>
+        <div class="crumbs" id="crumbs">
+          <span class="crumb-home" onclick="goHome()">Signal</span>
+          <span class="crumb-sep">›</span>
+          <span class="crumb-current" id="crumbCurrent">Today</span>
+        </div>
       </div>
       <div class="topbar-right">
         <span class="live"><span class="livedot"></span><span id="realStatus">connecting to live news…</span></span>
@@ -366,11 +422,15 @@
           <div id="glanceList"></div>
         </div>
       </div>
+
+      <div id="nextStepsToday"></div>
     </div>
 
     <!-- 2. BROWSE (grid + everything merged) -->
     <div class="page" id="page-grid">
       <div class="page-title"><div><h2>Browse &amp; search</h2><p>Everything we've collected. Search it, filter it, or look back over time.</p></div></div>
+
+      <div id="browseContext"></div>
 
       <div class="search-panel">
         <div class="search-main">
@@ -409,6 +469,8 @@
         </div>
       </div>
       <div id="viewList" style="display:none;"><div class="panel"><div class="feed" id="mentionsFeed" style="max-height:640px;"></div></div></div>
+
+      <div id="nextStepsBrowse"></div>
     </div>
 
     <!-- 3. US VS THEM (YTL watch + news stories merged) -->
@@ -460,11 +522,22 @@
           <div id="spokespersonList"></div>
         </div>
       </div>
+
+      <div id="nextStepsYtl"></div>
     </div>
 
     <!-- 4. TRENDS (AI industry + social trends merged) -->
     <div class="page" id="page-trends">
       <div class="page-title"><div><h2>Trends</h2><p>What the industry is talking about, and what's working on social right now.</p></div></div>
+
+      <div class="preview-banner">
+        <span class="pb-i">◐</span>
+        <div>
+          <strong>This section is a preview, not live data.</strong>
+          <span>Everything below uses example figures to show the shape of the thing. The industry half can go live for free once the n8n pipeline runs; the social half needs a paid listening tool. Nothing here should be quoted in a report yet.</span>
+        </div>
+      </div>
+
       <div class="section-head">What the industry is talking about</div>
 
       
@@ -747,16 +820,118 @@ function toggleSidebar(){
   document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 /* ===== NAV ===== */
+const PAGE_TITLES = { dash:'Today', grid:'Browse & Search', ytl:'Competitors', trends:'Trends', settings:'Settings' };
+
+function navigateTo(page){
+  document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.page===page));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const target = document.getElementById('page-'+page);
+  if(target) target.classList.add('active');
+  document.getElementById('crumbCurrent').textContent = PAGE_TITLES[page] || page;
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+  renderCrumbFilter();
+}
+
 document.querySelectorAll('.navitem').forEach(el=>{
   el.addEventListener('click',()=>{
-    document.querySelectorAll('.navitem').forEach(n=>n.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('page-'+el.dataset.page).classList.add('active');
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('show');
+    // leaving Browse by hand clears any drill-in context so it never lingers confusingly
+    if(el.dataset.page !== 'grid') clearBrowseContext(true);
+    navigateTo(el.dataset.page);
   });
 });
+
+function goHome(){
+  clearBrowseContext(true);
+  navigateTo('dash');
+}
+
+/* ===== BROWSE CONTEXT — every drill-in explains itself and offers next steps ===== */
+let browseContext = null; // {query, label, reason, backTo}
+
+function goToBrowseWithQuery(query, label, reason, backTo){
+  browseContext = {
+    query,
+    label: label || query,
+    reason: reason || null,
+    backTo: backTo || null
+  };
+  navigateTo('grid');
+  const box = document.getElementById('archiveSearch');
+  if(box) box.value = query;
+  runSearch();
+  renderBrowseContext();
+}
+
+function clearBrowseContext(silent){
+  browseContext = null;
+  const box = document.getElementById('archiveSearch');
+  if(box) box.value = '';
+  if(!silent){ runSearch(); }
+  renderBrowseContext();
+  renderCrumbFilter();
+}
+
+function renderCrumbFilter(){
+  const crumbs = document.getElementById('crumbs');
+  const existing = document.getElementById('crumbFilter');
+  if(existing) existing.remove();
+  const onBrowse = document.getElementById('page-grid')?.classList.contains('active');
+  if(browseContext && onBrowse){
+    const span = document.createElement('span');
+    span.id = 'crumbFilter';
+    span.className = 'crumb-filter';
+    span.innerHTML = `${browseContext.label} <span class="x" onclick="clearBrowseContext()" title="Clear this filter">✕</span>`;
+    crumbs.appendChild(document.createTextNode(''));
+    const sep = document.createElement('span');
+    sep.className = 'crumb-sep'; sep.textContent = '›'; sep.id = 'crumbFilterSep';
+    crumbs.appendChild(sep);
+    crumbs.appendChild(span);
+  } else {
+    const sep = document.getElementById('crumbFilterSep');
+    if(sep) sep.remove();
+  }
+}
+
+function renderBrowseContext(){
+  const el = document.getElementById('browseContext');
+  if(!el) return;
+  if(!browseContext){ el.innerHTML = ''; return; }
+  const results = searchResults();
+  const negCount = results.filter(m=>m.sentiment==='neg').length;
+  const sourceCount = new Set(results.map(m=>m.author)).size;
+
+  let insight;
+  if(!results.length){
+    insight = `Nothing tracked for this yet. Either it genuinely hasn't been covered, or the noise filter on Today is screening it out.`;
+  } else if(sourceCount === 1){
+    insight = `${results.length} item${results.length>1?'s':''} from a single source — treat as an isolated mention, not a trend.`;
+  } else {
+    insight = `${results.length} items across ${sourceCount} sources${negCount ? `, ${negCount} negative` : ', none negative'}. ${negCount >= 2 ? 'Multiple negative sources means this is a narrative, not a one-off.' : 'No coordinated negative narrative here.'}`;
+  }
+
+  el.innerHTML = `
+    <div class="context-bar">
+      <span class="cb-icon">⌕</span>
+      <div class="cb-body">
+        <h5>Showing coverage of "${browseContext.label}"</h5>
+        <p>${browseContext.reason ? browseContext.reason + ' ' : ''}${insight}</p>
+        <div class="context-actions">
+          <button class="ctx-btn primary" onclick="askAboutContext()">Ask assistant about this</button>
+          ${results.length ? `<button class="ctx-btn" onclick="botSendText('Other coverage of ${browseContext.label.replace(/'/g,"")}')">Compare sources</button>` : ''}
+          ${browseContext.backTo ? `<button class="ctx-btn" onclick="clearBrowseContext(true);navigateTo('${browseContext.backTo}')">← Back to ${PAGE_TITLES[browseContext.backTo]}</button>` : ''}
+          <button class="ctx-btn" onclick="clearBrowseContext()">Show everything instead</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function askAboutContext(){
+  if(!browseContext) return;
+  document.getElementById('botPanel').classList.remove('hidden');
+  botSendText('Summarise ' + browseContext.label);
+}
 
 /* ===== MENTION GENERATION ===== */
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -985,7 +1160,7 @@ function renderDashFeed(){
   let html = shown.map(mentionHTML).join('');
   if(allMentions.length > shown.length){
     html += `<div style="padding:14px 4px;text-align:center;">
-      <span style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;" onclick="goToBrowse()">See all ${allMentions.length} items in Browse →</span>
+      <span style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;" onclick="clearBrowseContext(true);navigateTo('grid');runSearch();">See all ${allMentions.length} items in Browse →</span>
     </div>`;
   }
   document.getElementById('dashFeed').innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12.5px;">Nothing yet — waiting on the first live pull.</div>';
@@ -1003,15 +1178,6 @@ function renderMentionsFeed(){
   }
   document.getElementById('mentionsFeed').innerHTML = html || '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12.5px;">No mentions yet for this filter.</div>';
 }
-function goToBrowse(){
-  document.querySelector('.navitem[data-page="grid"]').click();
-}
-function goToBrowseWithQuery(q){
-  document.querySelector('.navitem[data-page="grid"]').click();
-  const box = document.getElementById('archiveSearch');
-  if(box){ box.value = q; }
-  runSearch();
-}
 
 /* ===== FILTERS ===== */
 function setFilter(p){
@@ -1028,7 +1194,7 @@ function renderTopics(){
     const max = Math.max(...spark);
     const points = spark.map((v,idx)=> `${idx*13},${24-(v/max)*22}`).join(' ');
     return `<tr>
-      <td><strong style="cursor:pointer;color:var(--accent);" onclick="goToBrowseWithQuery('${t.name.replace(/'/g,"")}')" title="See coverage of this topic">${t.name}</strong></td>
+      <td><strong style="cursor:pointer;color:var(--accent);" onclick="goToBrowseWithQuery('${t.name.replace(/'/g,"")}', '${t.name.replace(/'/g,"")}', 'A topic you actively track.', 'settings')" title="See coverage of this topic">${t.name}</strong></td>
       <td class="mono">${t.count}</td>
       <td><span class="m-tag sent-pos" style="font-size:10.5px;">Mostly positive</span></td>
       <td><svg class="sparkline" viewBox="0 0 80 24"><polyline points="${points}" fill="none" stroke="#0e9c86" stroke-width="1.5"/></svg></td>
@@ -1241,7 +1407,7 @@ const spokespeople = [
 
 function renderNews(){
   document.getElementById('clusterList').innerHTML = newsClusters.map((c,i)=>`
-    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${c.headline.slice(0,30).replace(/'/g,"")}')" title="See related coverage">
+    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${c.headline.slice(0,30).replace(/'/g,"")}', '${c.headline.slice(0,40).replace(/'/g,"")}', 'One of today\'s top stories — this shows every source covering it.', 'ytl')" title="See related coverage">
     <div class="drl"><strong>${i+1}. ${c.headline}</strong><div class="sub">${c.outlets} outlets covering</div></div>
     <div style="display:flex;align-items:center;gap:10px;"><span class="m-tag ${sentClass(c.sentiment)}">${sentLabel(c.sentiment)}</span><span class="drv">${c.score}</span></div></div>`).join('');
   document.getElementById('sovNewsList').innerHTML = sovNews.map(s=>`
@@ -1335,7 +1501,8 @@ function openDetail(id){
   const related = allMentions.filter(x=>x.topic===m.topic && x.id!==m.id).slice(0,4);
   document.getElementById('dmRelated').innerHTML = related.length
     ? related.map(r=>`<div class="data-row" style="cursor:pointer;" onclick="openDetail('${r.id}')"><div class="drl"><strong>${r.author}</strong><div class="sub">${(r.text||'').slice(0,68)}…</div></div><div class="drv">${r.relevance ?? '—'}</div></div>`).join('')
-    : '<div style="font-size:12px;color:var(--text-dim);">No other coverage on this topic yet.</div>';
+      + `<div style="margin-top:10px;"><span class="ns-link" onclick="closeDetail();goToBrowseWithQuery('${m.topic.replace(/'/g,"")}', '${m.topic.replace(/'/g,"")}', 'All coverage on the topic of the item you opened.', 'dash')">See all coverage of ${m.topic} →</span></div>`
+    : `<div style="font-size:12px;color:var(--text-dim);">Only this one source has covered it so far — treat as an isolated mention, not a trend.<div style="margin-top:10px;"><span class="ns-link" onclick="closeDetail();goToBrowseWithQuery('${m.topic.replace(/'/g,"")}', '${m.topic.replace(/'/g,"")}', 'Checking whether anything else exists on this topic.', 'dash')">Check the wider topic →</span></div></div>`;
 
   const linkBtn = document.getElementById('dmOpenLink');
   if(m.real && m.url){ linkBtn.style.display='block'; linkBtn.onclick = ()=>window.open(m.url,'_blank'); }
@@ -1375,16 +1542,16 @@ const rivalActivity = [
 ];
 function renderYtl(){
   document.getElementById('segmentTable').innerHTML = ytlSegments.map(s=>`
-    <tr style="cursor:pointer;" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}')" title="See coverage related to this segment">
+    <tr style="cursor:pointer;" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}', 'You clicked this segment from the YTL business map.', 'ytl')" title="See coverage related to this segment">
       <td><strong>${s.seg}</strong></td>
       <td style="font-size:11.5px;color:var(--text-dim);">${s.ytl}</td>
-      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;cursor:pointer;" onclick="event.stopPropagation();goToBrowseWithQuery('${r.replace(/'/g,"")}')">${r}</span>`).join('')}</td>
+      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;cursor:pointer;" onclick="event.stopPropagation();goToBrowseWithQuery('${r.replace(/'/g,"")}', '${r.replace(/'/g,"")}', 'Competitor in the ${s.seg.replace(/'/g,"")} segment.', 'ytl')">${r}</span>`).join('')}</td>
       <td class="mono">${Math.floor(Math.random()*20)+3}</td>
     </tr>`).join('');
 
   const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
   document.getElementById('rivalList').innerHTML = rivalActivity.map(r=>`
-    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${r.name.replace(/'/g,"")}')"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
+    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${r.name.replace(/'/g,"")}', '${r.name.replace(/'/g,"")}', 'Tracked competitor in ${r.seg}.', 'ytl')"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
 
   const ytlCount = allMentions.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text)).length;
   document.getElementById('ytlMentions').textContent = ytlCount;
@@ -1989,6 +2156,7 @@ function renderCrisisZone(){
         <p>Highest priority: "${top.text.slice(0,100)}${top.text.length>100?'…':''}" — ${top.author}, score ${top.relevance}${top.real?', live news':''}.</p>
       </div>
       <button class="cb-btn" onclick="openDetail('${top.id}')">Review now</button>
+      <button class="cb-btn" style="background:rgba(255,255,255,.18);color:#fff;" onclick="goToBrowseWithQuery('${top.topic.replace(/'/g,"")}', '${top.topic.replace(/'/g,"")}', 'Drilled in from the urgent-items banner.', 'dash')">See all on this</button>
       <button class="cb-dismiss" onclick="document.getElementById('crisisZone').style.display='none'" title="Hide for this session">✕</button>
     </div>`;
 }
@@ -2092,6 +2260,48 @@ function exportDigest(){
   URL.revokeObjectURL(url);
 }
 
+
+/* ===== NAV COUNTS — the sidebar tells you how much is waiting, before you click ===== */
+function renderNavCounts(){
+  const t = document.getElementById('navCountToday');
+  const b = document.getElementById('navCountBrowse');
+  if(t){
+    const urgent = allMentions.filter(m=>strengthOf(m).urgent && getCaseStatus(m.id)!=='resolved').length;
+    t.textContent = urgent ? urgent + ' urgent' : '';
+    t.style.color = urgent ? 'var(--accent)' : '';
+  }
+  if(b) b.textContent = allMentions.length ? allMentions.length : '';
+}
+
+/* ===== NEXT STEPS — every section suggests where to go, so nothing dead-ends ===== */
+function renderNextSteps(){
+  const map = {
+    nextStepsToday: [
+      ['See everything collected', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
+      ['How do we compare to competitors?', "navigateTo('ytl')"],
+      ['Ask what I should do today', "document.getElementById('botPanel').classList.remove('hidden');botSendText(\'What\\'s next?\')"],
+      ['Add or change tracked topics', "navigateTo('settings')"]
+    ],
+    nextStepsBrowse: [
+      ["Back to today's briefing", "goHome()"],
+      ['Check competitor coverage', "navigateTo('ytl')"],
+      ['Export what I\'m seeing', "exportDigestExcel()"]
+    ],
+    nextStepsYtl: [
+      ["Back to today's briefing", "goHome()"],
+      ['Search all coverage', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
+      ['Add a competitor as a tracked topic', "navigateTo('settings')"]
+    ]
+  };
+  Object.entries(map).forEach(([id, links])=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = `<div class="next-steps"><h5>Where to next</h5><div class="ns-row">`+
+      links.map(([label, action])=>`<span class="ns-link" onclick="${action}">${label}</span>`).join('')+
+      `</div></div>`;
+  });
+}
+
 /* ===== MAIN LOOP ===== */
 // Demo social posts are OFF by default now — the feed leads with real news/Reddit,
 // not a constant stream of fabricated posts. Toggle in Settings if you want to see
@@ -2112,6 +2322,7 @@ function tick(){
   renderGrid();
   renderYtl();
   renderCrisisZone();
+  renderNavCounts();
 }
 
 function setDemoMode(on){
@@ -2138,6 +2349,8 @@ renderYtl();
 renderCrisisZone();
 loadSavedIlmu();
 loadYoutubeKey();
+renderNextSteps();
+renderNavCounts();
 document.getElementById('demoModeToggle').checked = demoMode;
 if(demoMode){ for(let i=0;i<6;i++) genMention(); }
 tick();
