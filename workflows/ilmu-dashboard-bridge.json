@@ -1,0 +1,267 @@
+{
+  "name": "ILMU — Signal Dashboard Bridge (read-only)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "signal-dashboard",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "2f8b61fe-3fe2-44e3-b174-37fcc16567fc",
+      "name": "Dashboard Question In",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -656,
+        80
+      ],
+      "webhookId": "signal-dashboard-bridge",
+      "notes": "READ-ONLY endpoint for the Signal dashboard. Never wire Notion write nodes into this workflow. 'Allowed Origins (CORS)' is set to * — tighten this to your actual site origin before real deployment."
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Auth gate ---\n// Set REQUIRE_AUTH = false ONLY while testing. Set the token below to match\n// the value pasted into the dashboard's Settings box.\nconst REQUIRE_AUTH = true;\nconst SHARED_SECRET = 'REPLACE_WITH_YOUR_OWN_SECRET';\n\nconst headers = $input.first().json.headers || {};\nconst supplied = headers['x-agent-token'] || headers['X-Agent-Token'] || '';\n\nif (REQUIRE_AUTH && supplied !== SHARED_SECRET) {\n  return [{ json: { authFailed: true, botReply: 'Not authorised.' } }];\n}\n\nconst body = $input.first().json.body || {};\nconst question = String(body.message || '').slice(0, 800);\nconst ctx = body.context || {};\n\n// Build a compact, readable context block from what the dashboard sent\nconst topicLines = (ctx.topics || [])\n  .map(t => `- ${t.name}: ${t.count} items today`).join('\\n');\n\nconst itemLines = (ctx.topItems || []).map((it, i) =>\n  `${i + 1}. \"${it.headline}\"\\n   source: ${it.source} | platform: ${it.platform} | tone: ${it.sentiment} | score: ${it.score}${it.live ? ' | LIVE NEWS' : ' | demo item'}`\n).join('\\n');\n\nconst contextBlock = `You are answering a question from the Signal PR dashboard for YTL Creative Communications.\nYou are in READ-ONLY mode: never create, update, or log anything. Only answer.\n\nTODAY'S TRACKED DATA\nTotal items today: ${ctx.itemsToday || 0}\n\nTracked topics:\n${topicLines || '(none)'}\n\nTop items in the feed right now:\n${itemLines || '(none yet)'}\n\nAnswer the user's question using ONLY the data above. Be concise and practical — this is for a PR manager scanning quickly. If the data does not contain the answer, say so plainly rather than guessing. Do not invent headlines or sources.`;\n\nreturn [{ json: {\n  authFailed: false,\n  question,\n  systemContext: contextBlock,\n  from: body.from || 'dashboard user'\n} }];"
+      },
+      "id": "2dd45cec-75a0-4989-b743-41ac4567210f",
+      "name": "Build Read-Only Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        80
+      ],
+      "notes": "AUTH: set REQUIRE_AUTH=false to bypass while testing, true to enforce. SHARED_SECRET must exactly match the token pasted into the dashboard Settings. Do not reuse the Teams webhook secret."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "auth-check",
+              "leftValue": "={{ $json.authFailed }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b5f50c35-e1ef-4ed7-8bfb-0da68288fd0c",
+      "name": "Authorised?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ilmu.ai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'ilmu-v3.1', temperature: 0.3, max_tokens: 700, messages: [ { role: 'system', content: $json.systemContext }, { role: 'user', content: $json.question } ] }) }}",
+        "options": {
+          "timeout": 25000
+        }
+      },
+      "id": "4c30582f-8918-412a-b67b-6e6f38b65a56",
+      "name": "Ask ILMU",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "CRRgScOmqPWvpnwG",
+          "name": "ILMU"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Endpoint confirmed from the ILMU provider config: baseUrl https://api.ilmu.ai/v1 with api type 'openai-completions', so the chat path is /v1/chat/completions. MODEL: use ilmu-v3.1 for chat. Do NOT use bge-m3 (that is an embedding model, no chat capability) or 'nemo-super' (an n8n node display name, not a real model id). To list what this endpoint actually serves: GET https://api.ilmu.ai/v1/models with the same bearer credential."
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $input.first().json;\n\n// Surface a real error instead of a silent generic message\nif (r && (r.error || r.statusCode >= 400)) {\n  const detail = r.error?.message || r.error || ('HTTP ' + r.statusCode);\n  return [{ json: { botReply: 'ILMU call failed: ' + detail + '. Most likely the endpoint URL is wrong (try /v1/chat/completions) or the credential is not authorised.' } }];\n}\n\nlet reply = r?.choices?.[0]?.message?.content\n  || r?.content?.[0]?.text\n  || r?.message?.content\n  || r?.message\n  || r?.reply\n  || r?.output\n  || '';\n\nif (!reply || typeof reply !== 'string') {\n  return [{ json: { botReply: 'ILMU returned an unrecognised response shape. Raw keys received: ' + Object.keys(r || {}).join(', ') + '. Check the Ask ILMU node URL and model.' } }];\n}\n\nreturn [{ json: { botReply: reply.trim() } }];"
+      },
+      "id": "81b95f5a-e238-41a2-882d-37184dd21513",
+      "name": "Extract Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ botReply: $json.botReply }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, x-agent-token"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              }
+            ]
+          }
+        }
+      },
+      "id": "733b0e00-65b4-44df-a87d-37223fe06ed8",
+      "name": "Respond to Dashboard",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "notes": "These CORS headers are what let the browser accept the reply. Replace * with your real site origin before going live."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ botReply: 'Not authorised.' }) }}",
+        "options": {
+          "responseCode": 401,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, x-agent-token"
+              }
+            ]
+          }
+        }
+      },
+      "id": "543c655e-d5bb-4e49-8cc8-c39bf3543b66",
+      "name": "Reject Unauthorised",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        208
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dashboard Question In": {
+      "main": [
+        [
+          {
+            "node": "Build Read-Only Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Read-Only Prompt": {
+      "main": [
+        [
+          {
+            "node": "Authorised?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authorised?": {
+      "main": [
+        [
+          {
+            "node": "Ask ILMU",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Unauthorised",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ILMU": {
+      "main": [
+        [
+          {
+            "node": "Extract Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Reply": {
+      "main": [
+        [
+          {
+            "node": "Respond to Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": true
+  },
+  "versionId": "95ad6f45-15b3-461b-8614-c75b5749a49f",
+  "meta": {
+    "instanceId": "870f34b17c03de4186344d3bb10ed3c6d603fd9763feeaac1da4aab7aa898730"
+  },
+  "id": "0yW5U2BdTtmtOsKI",
+  "tags": []
+}

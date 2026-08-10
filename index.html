@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal — Social Listening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f6f9; --surface:#ffffff; --surface-2:#f0f2f6; --surface-3:#e7e9f0;
+    --line:#e3e5ec; --text:#1a1d29; --text-dim:#6b7080; --text-dim2:#9a9ea9;
+    --accent:#e2386b; --accent-dim:#fbe1ea; --teal:#0e9c86; --teal-dim:#e0f6f1; --amber:#c9821e; --amber-dim:#fbedd9; --blue:#2469c9; --blue-dim:#e2edfb;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;}
+
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{width:200px;flex-shrink:0;border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:9px;padding:0 8px 22px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-dim);flex-shrink:0;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px var(--accent-dim);}50%{box-shadow:0 0 0 7px var(--accent-dim);}}
+  .brand h1{font-size:18px;font-weight:700;}
+  .navitem{display:flex;align-items:center;gap:11px;padding:10px 10px;border-radius:8px;color:var(--text-dim);font-size:13px;font-weight:500;cursor:pointer;}
+  .navitem .ic{width:17px;text-align:center;font-size:14px;}
+  .navitem:hover{background:var(--surface-2);color:var(--text);}
+  .navitem.active{background:var(--surface-2);color:var(--text);}
+  .navitem.active .ic{color:var(--accent);}
+  .sidebar-foot{margin-top:auto;padding:12px 8px 0;border-top:1px solid var(--line);font-size:10.5px;color:var(--text-dim2);line-height:1.6;}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(245,246,249,0.9);backdrop-filter:blur(8px);z-index:15;}
+  .topbar-right{display:flex;align-items:center;gap:16px;font-size:11.5px;color:var(--text-dim);}
+  .topbar-right .live{color:var(--accent);font-weight:600;display:flex;align-items:center;gap:5px;}
+  .livedot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.4s infinite;}
+
+  .page{padding:26px 30px 100px;display:none;}
+  .page.active{display:block;}
+  .page-title{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+  .page-title h2{font-size:22px;font-weight:700;}
+  .page-title p{font-size:12.5px;color:var(--text-dim);margin-top:3px;}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(20,20,40,0.04);}
+  .kpi .l{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+  .kpi .v{font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;}
+  .kpi .d{font-size:11px;margin-top:4px;}
+  .d.up{color:var(--teal);} .d.down{color:var(--accent);}
+
+  .grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:20px;}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(20,20,40,0.04);}
+  .panel h3{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+  .panel h3 span{font-size:10.5px;color:var(--text-dim);font-weight:400;}
+
+  .feed{display:flex;flex-direction:column;gap:0;max-height:520px;overflow-y:auto;}
+  .mention{display:flex;gap:12px;padding:13px 4px;border-bottom:1px solid var(--line);animation:slidein .35s ease;}
+  @keyframes slidein{from{opacity:0;transform:translateY(-6px);background:var(--accent-dim);}to{opacity:1;transform:translateY(0);}}
+  .mention:last-child{border-bottom:none;}
+  .m-ic{width:34px;height:34px;border-radius:8px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .m-body{flex:1;min-width:0;}
+  .m-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .m-author{font-size:12.5px;font-weight:600;}
+  .m-time{font-size:10.5px;color:var(--text-dim2);flex-shrink:0;}
+  .m-text{font-size:12.5px;color:var(--text-dim);line-height:1.45;margin:3px 0 6px;}
+  .m-foot{display:flex;gap:10px;align-items:center;font-size:10.5px;color:var(--text-dim2);}
+  .m-tag{padding:2px 8px;border-radius:20px;font-weight:600;}
+  .tag-real{background:#0e9c86;color:#fff;}
+  .tag-sim{background:var(--surface-3);color:var(--text-dim2);}
+  .tag-topic{background:var(--surface-3);color:var(--text-dim);}
+  .sent-pos{background:var(--teal-dim);color:var(--teal);}
+  .sent-neg{background:var(--accent-dim);color:var(--accent);}
+  .sent-neu{background:var(--surface-3);color:var(--text-dim);}
+
+  .topic-chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .topic-chip{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:7px 8px 7px 14px;font-size:12px;font-weight:500;box-shadow:0 1px 2px rgba(20,20,40,0.03);}
+  .topic-chip .cnt{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim);background:var(--surface-2);border-radius:10px;padding:1px 7px;}
+  .topic-chip .rm{cursor:pointer;color:var(--text-dim2);font-size:14px;padding:0 3px;}
+  .topic-chip .rm:hover{color:var(--accent);}
+  .topic-add{display:flex;gap:8px;margin-bottom:24px;}
+  .topic-add input{flex:1;max-width:280px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;font-family:inherit;}
+  .topic-add input:focus{outline:none;border-color:var(--accent);}
+  .btn-solid{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer;}
+  .btn-solid:disabled{background:var(--surface-3);color:var(--text-dim2);cursor:not-allowed;}
+  .topic-limit-note{font-size:11px;color:var(--text-dim);margin-top:-14px;margin-bottom:20px;}
+
+  .topic-table{width:100%;border-collapse:collapse;}
+  .topic-table th{text-align:left;font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line);}
+  .topic-table td{padding:12px 10px;font-size:12.5px;border-bottom:1px solid var(--line);}
+  .sparkline{width:80px;height:24px;}
+  .sov-bar{height:8px;border-radius:4px;background:var(--surface-3);overflow:hidden;display:flex;}
+  .sov-seg{height:100%;}
+
+  .chart-wrap{position:relative;height:220px;}
+
+  .influencer-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .influencer-row:last-child{border-bottom:none;}
+  .inf-av{width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-dim);flex-shrink:0;}
+  .inf-info{flex:1;min-width:0;}
+  .inf-name{font-size:12px;font-weight:600;}
+  .inf-meta{font-size:10.5px;color:var(--text-dim);}
+  .inf-eng{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-dim);}
+
+  .alert-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+  .alert-info{font-size:12.5px;font-weight:600;}
+  .alert-sub{font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .switch{position:relative;width:38px;height:22px;background:var(--surface-3);border-radius:11px;cursor:pointer;flex-shrink:0;}
+  .switch.on{background:var(--teal);}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .15s;}
+  .switch.on::after{transform:translateX(16px);}
+  .field-row{display:flex;gap:10px;margin-top:10px;}
+  .field-row select,.field-row input{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;}
+
+  .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .fchip{padding:7px 13px;border-radius:20px;font-size:12px;font-weight:500;background:var(--surface);border:1px solid var(--line);cursor:pointer;color:var(--text-dim);}
+  .fchip.active{background:var(--text);color:#fff;border-color:var(--text);}
+
+  @media(max-width:1000px){.sidebar{display:none;}.grid2{grid-template-columns:1fr;}.kpi-row{grid-template-columns:repeat(2,1fr);}}
+
+  .ig-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .ig-card{aspect-ratio:1/1;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);}
+  .ig-card .ig-fill{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;text-align:center;padding:14px;line-height:1.3;}
+  .ig-card .ig-plat{position:absolute;top:8px;left:8px;font-size:9px;padding:3px 7px;border-radius:20px;background:rgba(20,20,30,0.55);color:#fff;}
+  .ig-card .ig-eng{position:absolute;bottom:8px;left:8px;right:8px;display:flex;justify-content:space-between;font-size:10px;color:#fff;background:rgba(20,20,30,0.4);border-radius:6px;padding:4px 8px;}
+  .ig-card .ig-sent{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;}
+
+  .data-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .data-row:last-child{border-bottom:none;}
+  .data-row .drl{font-size:12.5px;}
+  .data-row .drl .sub{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+  .data-row .drv{font-family:'IBM Plex Mono',monospace;font-size:12px;flex-shrink:0;text-align:right;}
+  .up-arrow{color:var(--teal);} .down-arrow{color:var(--accent);}
+  .status-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;flex-shrink:0;}
+  .status-live{background:var(--teal-dim);color:var(--teal);}
+  .status-proposed{background:var(--amber-dim);color:var(--amber);}
+  .status-blocked{background:var(--accent-dim);color:var(--accent);}
+  @media(max-width:1000px){.ig-grid{grid-template-columns:repeat(2,1fr);}}
+
+
+  .nav-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim2);font-weight:700;padding:14px 10px 5px;}
+  .help-dot{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--surface-3);color:var(--text-dim);font-size:9px;font-weight:700;cursor:help;margin-left:4px;vertical-align:middle;}
+  .orient{display:flex;align-items:flex-start;gap:14px;background:linear-gradient(180deg,var(--surface) 0%,var(--surface) 100%);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:20px;}
+  .orient h4{font-size:13.5px;font-weight:700;margin-bottom:5px;}
+  .orient p{font-size:12.5px;color:var(--text-dim);line-height:1.6;}
+  .orient .oi{font-size:18px;flex-shrink:0;margin-top:1px;}
+  .orient-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 15px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;align-self:center;}
+  .kpi .meaning{font-size:10.5px;color:var(--text-dim2);margin-top:5px;line-height:1.4;}
+  .score-word{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;}
+  .sw-high{color:var(--accent);} .sw-mid{color:var(--amber);} .sw-low{color:var(--text-dim2);}
+
+  .section-head{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);font-weight:700;margin:32px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+  .view-toggle{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px;margin-bottom:16px;gap:2px;}
+  .vt{padding:6px 16px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text-dim);}
+  .vt.active{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(20,20,40,.06);}
+
+  .search-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(20,20,40,.04);}
+  .search-main{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:13px;}
+  .search-ic{font-size:17px;color:var(--text-dim2);}
+  .search-main input{flex:1;border:none;background:none;outline:none;font-family:inherit;font-size:14.5px;color:var(--text);}
+  .search-clear{background:var(--surface-3);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;color:var(--text-dim);font-size:11px;}
+  .search-opts{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .date-chip{padding:5px 12px;border-radius:20px;font-size:11.5px;font-weight:500;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;color:var(--text-dim);}
+  .date-chip.active{background:var(--text);color:#fff;border-color:var(--text);}
+  .search-summary{font-size:12.5px;color:var(--text-dim);margin-bottom:16px;min-height:18px;}
+  .search-summary strong{color:var(--text);}
+  .hl{background:#fde68a;color:#4a3208;border-radius:2px;padding:0 1px;}
+
+  .bot-modal-overlay{position:fixed;inset:0;background:rgba(20,20,40,0.42);opacity:0;pointer-events:none;transition:opacity .18s;z-index:39;}
+  .bot-modal-overlay.show{opacity:1;pointer-events:auto;}
+  .bot-panel.expanded{
+    position:fixed;top:50%;left:50%;bottom:auto;right:auto;
+    transform:translate(-50%,-50%) scale(1);
+    width:640px;max-width:92vw;max-height:82vh;
+  }
+  .bot-panel.expanded .bot-body{min-height:340px;}
+  .bot-expand{background:none;border:none;color:var(--text-dim2);cursor:pointer;font-size:13px;padding:0 4px;}
+  .bot-expand:hover{color:var(--text);}
+
+  /* ===== STRENGTH & URGENCY SYSTEM ===== */
+  .strength-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em;}
+  .st-strongpos{background:#0e9c86;color:#fff;}
+  .st-pos{background:var(--teal-dim);color:var(--teal);}
+  .st-neutral{background:var(--surface-3);color:var(--text-dim);}
+  .st-watch{background:var(--amber-dim);color:var(--amber);}
+  .st-urgent{background:var(--accent);color:#fff;}
+  .strength-badge .dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+
+  .crisis-banner{display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#e2386b 0%,#c22458 100%);border-radius:12px;padding:18px 22px;margin-bottom:20px;color:#fff;box-shadow:0 10px 30px rgba(226,56,107,.25);}
+  .crisis-banner .ci{font-size:26px;flex-shrink:0;}
+  .crisis-banner h4{font-size:14px;font-weight:700;margin-bottom:4px;}
+  .crisis-banner p{font-size:12.5px;opacity:.92;line-height:1.5;}
+  .crisis-banner .cb-btn{background:#fff;color:#c22458;border:none;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;}
+  .crisis-banner .cb-dismiss{background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:12px;}
+
+  .allclear-banner{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--teal);border-left:4px solid var(--teal);border-radius:10px;padding:14px 18px;margin-bottom:20px;}
+  .allclear-banner .ai{font-size:20px;color:var(--teal);}
+  .allclear-banner strong{font-size:13px;}
+  .allclear-banner span{font-size:12px;color:var(--text-dim);display:block;margin-top:2px;}
+
+  .case-status{display:inline-flex;gap:5px;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;}
+  .cs-new{background:var(--surface-3);color:var(--text-dim);}
+  .cs-watching{background:var(--blue-dim);color:var(--blue);}
+  .cs-responding{background:var(--amber-dim);color:var(--amber);}
+  .cs-resolved{background:var(--teal-dim);color:var(--teal);}
+
+  .status-picker{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+  .status-opt{padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:600;border:1px solid var(--line);background:var(--surface-2);cursor:pointer;color:var(--text-dim);}
+  .status-opt.active{border-color:currentColor;}
+  .status-opt.active.cs-new{background:var(--surface-3);color:var(--text-dim);}
+  .status-opt.active.cs-watching{background:var(--blue-dim);color:var(--blue);}
+  .status-opt.active.cs-responding{background:var(--amber-dim);color:var(--amber);}
+  .status-opt.active.cs-resolved{background:var(--teal-dim);color:var(--teal);}
+
+  .disclaimer-note{font-size:10.5px;color:var(--text-dim2);font-style:italic;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);}
+
+  .export-btn{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);}
+  .export-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
+
+  .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
+  .noise-controls{display:flex;align-items:center;gap:10px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,20,40,0.42);opacity:0;pointer-events:none;transition:opacity .18s;z-index:50;}
+  .modal-overlay.show{opacity:1;pointer-events:auto;}
+  .detail-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.96);width:560px;max-width:92vw;max-height:86vh;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 70px rgba(20,20,40,0.28);z-index:51;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;display:flex;flex-direction:column;overflow:hidden;}
+  .detail-modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  .dm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:22px 24px 16px;border-bottom:1px solid var(--line);}
+  .dm-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;display:block;margin-bottom:7px;}
+  .dm-head h2{font-size:18px;line-height:1.35;font-weight:700;}
+  .dm-close{background:var(--surface-2);border:1px solid var(--line);width:28px;height:28px;border-radius:50%;cursor:pointer;color:var(--text-dim);flex-shrink:0;font-size:13px;}
+  .dm-body{padding:20px 24px 24px;overflow-y:auto;}
+  .dm-meta{font-size:12px;color:var(--text-dim);margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .dm-stats{display:flex;gap:10px;margin-bottom:20px;}
+  .dm-stat{flex:1;background:var(--surface-2);border-radius:9px;padding:12px;text-align:center;}
+  .dm-stat .n{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;}
+  .dm-stat .l{font-size:9.5px;color:var(--text-dim);text-transform:uppercase;margin-top:3px;letter-spacing:.03em;}
+  .dm-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:600;margin:20px 0 10px;}
+  .dm-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12px;}
+  .dm-bar-row .lbl{width:130px;color:var(--text-dim);flex-shrink:0;}
+  .dm-bar{flex:1;height:7px;background:var(--surface-3);border-radius:4px;overflow:hidden;}
+  .dm-bar div{height:100%;background:var(--accent);}
+  .dm-bar-row .v{width:34px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px;}
+  .dm-actions{display:flex;gap:9px;margin-top:22px;}
+  .dm-btn{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:11px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);}
+  .dm-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .dm-btn:hover{border-color:var(--accent);}
+
+  .ig-card .ig-fill{align-items:flex-start;justify-content:flex-start;flex-direction:column;gap:6px;font-size:12px;font-weight:500;text-align:left;padding:34px 12px 40px;line-height:1.35;overflow:hidden;}
+  .ig-card .ig-topic{font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.65;}
+  .ig-card .ig-headline{font-size:12px;font-weight:600;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
+  .ig-card:hover{border-color:var(--accent);}
+  .bot-panel{width:340px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px rgba(20,20,40,0.18);overflow:hidden;display:flex;flex-direction:column;max-height:460px;transition:transform .18s ease,opacity .18s ease;transform-origin:bottom right;}
+  .bot-panel.hidden{transform:scale(.92) translateY(8px);opacity:0;pointer-events:none;position:absolute;bottom:0;right:0;}
+  .bot-head{display:flex;align-items:center;gap:9px;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .bot-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--accent));flex-shrink:0;}
+  .bot-name{font-weight:600;font-size:13px;}
+  .bot-status{font-size:10px;color:var(--teal);}
+  .bot-close{margin-left:auto;background:none;border:none;color:var(--text-dim2);cursor:pointer;font-size:13px;}
+  .bot-body{padding:14px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:120px;}
+  .bot-bubble{font-size:12.5px;line-height:1.5;padding:9px 12px;border-radius:10px;max-width:90%;white-space:pre-line;}
+  .bot-bubble.bot{background:var(--surface-2);align-self:flex-start;border-top-left-radius:2px;}
+  .bot-bubble.user{background:var(--accent-dim);color:var(--accent);align-self:flex-end;border-top-right-radius:2px;font-weight:500;}
+  .bot-quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;}
+  .bot-chip{font-size:11px;padding:5px 11px;border-radius:20px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;color:var(--text-dim);}
+  .bot-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .bot-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);}
+  .bot-input input{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;}
+  .bot-input input:focus{outline:none;border-color:var(--accent);}
+  .bot-input button{background:var(--accent);border:none;border-radius:8px;padding:0 14px;color:#fff;font-weight:600;font-size:12px;cursor:pointer;}
+  .bot-toggle{display:flex;align-items:center;gap:9px;background:var(--text);color:#fff;border:none;border-radius:30px;padding:12px 18px 12px 14px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 10px 26px rgba(20,20,40,0.22);}
+  .bot-ico{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="brand"><div class="dot"></div><h1>Signal</h1></div>
+    <div class="navitem active" data-page="dash"><span class="ic">◆</span>Today</div>
+    <div class="navitem" data-page="grid"><span class="ic">▤</span>Browse</div>
+    <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitor News</div>
+    <div class="navitem" data-page="trends"><span class="ic">↗</span>Trends</div>
+    <div class="navitem" data-page="settings"><span class="ic">⚙</span>Settings</div>
+    <div class="sidebar-foot"><strong style="color:var(--text-dim);">Green "LIVE" tag</strong> = a real news article, pulled just now.<br><strong style="color:var(--text-dim);">Grey "DEMO" tag</strong> = example social post, for showing how it looks.</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div><strong style="font-size:13px;">PR Tracking — 6 topics live</strong></div>
+      <div class="topbar-right">
+        <span class="live"><span class="livedot"></span><span id="realStatus">connecting to live news…</span></span>
+        <span class="mono" id="totalCount">0 mentions today</span>
+      </div>
+    </div>
+
+    <!-- 1. TODAY -->
+    <div class="page active" id="page-dash">
+
+      <div class="page-title">
+        <div><h2>Today</h2><p>What people are saying about YTL and your industry, updated continuously.</p></div>
+        <button class="export-btn" onclick="exportDigest()">⭳ Export today's briefing</button>
+      </div>
+
+      <div id="crisisZone"></div>
+
+      <div class="orient" id="orientBanner">
+        <span class="oi">👋</span>
+        <div style="flex:1;">
+          <h4>New here? This is your morning read.</h4>
+          <p>Everything below is what people said about YTL and your industry recently — from news sites, and from social media. The <strong>higher the score</strong> on an item, the more it matters. Click anything to read the full story. Stuck? Hit <strong>"Ask me anything"</strong> at the bottom right and type a question in plain English.</p>
+        </div>
+        <button class="orient-btn" onclick="document.getElementById('orientBanner').style.display='none'">Got it</button>
+      </div>
+
+      <div class="noise-bar">
+        <div class="noise-left">
+          <strong style="font-size:12.5px;">Noise control <span class="help-dot" title="Stops low-value posts from cluttering your feed. Higher setting = fewer but more important items.">?</span></strong>
+          <div style="font-size:11px;color:var(--text-dim);margin-top:2px;" id="noiseNote">Skipping low-value posts so your feed stays useful</div>
+        </div>
+        <div class="noise-controls">
+          <label style="font-size:11.5px;color:var(--text-dim);">Show me</label>
+          <input type="range" id="noiseSlider" min="0" max="90" value="45" oninput="setNoise(this.value)" style="width:150px;">
+          <span class="mono" id="noiseVal" style="font-size:12px;width:26px;">45</span>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;cursor:pointer;margin-left:14px;">
+            <input type="checkbox" id="authToggle" onchange="setAuthority(this.checked)"> Major news outlets only
+          </label>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi"><div class="l">Things said about us</div><div class="v" id="kpiMentions">0</div><div class="d up" id="kpiMentionsDelta">↑ —</div><div class="meaning">Articles and posts mentioning what we track</div></div>
+        <div class="kpi"><div class="l">How positive</div><div class="v" id="kpiSentiment">—</div><div class="d" id="kpiSentimentSub">— positive</div><div class="meaning">Above 60% is healthy. Below 40% needs attention.</div></div>
+        <div class="kpi"><div class="l">People reached</div><div class="v" id="kpiReach">—</div><div class="d up">↑ growing</div><div class="meaning">Rough estimate of how many saw this coverage</div></div>
+        <div class="kpi"><div class="l">Our slice of the talk</div><div class="v" id="kpiSov">—</div><div class="d">vs tracked competitors</div><div class="meaning">How much of the industry conversation is about us</div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Latest mentions <span>streaming</span></h3>
+          <div class="feed" id="dashFeed"></div>
+        </div>
+        <div class="panel">
+          <h3>Top voices today</h3>
+          <div id="influencerList"></div>
+          <h3 style="margin-top:22px;">Today at a glance</h3>
+          <div id="glanceList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. BROWSE (grid + everything merged) -->
+    <div class="page" id="page-grid">
+      <div class="page-title"><div><h2>Browse &amp; search</h2><p>Everything we've collected. Search it, filter it, or look back over time.</p></div></div>
+
+      <div class="search-panel">
+        <div class="search-main">
+          <span class="search-ic">⌕</span>
+          <input type="text" id="archiveSearch" placeholder="Search everything — try 'data centre', 'Gamuda', 'cement'…" oninput="runSearch()">
+          <button class="search-clear" onclick="clearSearch()" id="searchClear" style="display:none;">✕</button>
+        </div>
+        <div class="search-opts">
+          <span class="date-chip active" data-range="all" onclick="setRange('all')">All time</span>
+          <span class="date-chip" data-range="today" onclick="setRange('today')">Today</span>
+          <span class="date-chip" data-range="week" onclick="setRange('week')">This week</span>
+          <span class="date-chip" data-range="month" onclick="setRange('month')">This month</span>
+          <span style="width:1px;height:20px;background:var(--line);margin:0 4px;"></span>
+          <span class="date-chip" data-tone="all" onclick="setTone('all')">Any tone</span>
+          <span class="date-chip" data-tone="pos" onclick="setTone('pos')">Positive</span>
+          <span class="date-chip" data-tone="neg" onclick="setTone('neg')">Negative</span>
+        </div>
+      </div>
+
+      <div class="search-summary" id="searchSummary"></div>
+
+      <div class="panel" id="searchTrendPanel" style="display:none;margin-bottom:18px;">
+        <h3>Mentions over time <span id="trendScope">—</span></h3>
+        <div class="chart-wrap" style="height:150px;"><canvas id="searchTrendChart"></canvas></div>
+      </div>
+
+      <div class="view-toggle">
+        <span class="vt active" id="vtGrid" onclick="setView('grid')">Tiles</span>
+        <span class="vt" id="vtList" onclick="setView('list')">List</span>
+      </div>
+      <div class="filter-row" id="gridFilters"></div>
+      <div id="viewGrid"><div class="ig-grid" id="igGrid"></div></div>
+      <div id="viewList" style="display:none;"><div class="panel"><div class="feed" id="mentionsFeed" style="max-height:640px;"></div></div></div>
+    </div>
+
+    <!-- 3. US VS THEM (YTL watch + news stories merged) -->
+    <div class="page" id="page-ytl">
+      <div class="page-title"><div><h2>Competitor News</h2><p>How much of the conversation is about YTL, and what our competitors are up to.</p></div></div>
+
+      
+      <div class="kpi-row">
+        <div class="kpi"><div class="l">About YTL</div><div class="v" id="ytlMentions">—</div><div class="d up">across all segments</div></div>
+        <div class="kpi"><div class="l">About competitors</div><div class="v" id="rivalMentions">—</div><div class="d">tracked rivals</div></div>
+        <div class="kpi"><div class="l">Our slice of the talk</div><div class="v" id="ytlSov">—</div><div class="d">YTL vs industry</div></div>
+        <div class="kpi"><div class="l">Business areas</div><div class="v">7</div><div class="d">utilities to digital</div></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <h3>Segment map <span>YTL entity vs competitors — click a row for detail</span></h3>
+        <table class="topic-table">
+          <thead><tr><th>Segment</th><th>YTL entity</th><th>Main competitors</th><th>Activity</th></tr></thead>
+          <tbody id="segmentTable"></tbody>
+        </table>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Competitor activity <span>illustrative volume</span></h3>
+          <div id="rivalList"></div>
+          <div class="disclaimer-note">These competitor numbers are placeholders — each rival needs to become a tracked keyword in Settings for this to reflect real coverage.</div>
+        </div>
+        <div class="panel">
+          <h3>YTL segment coverage split</h3>
+          <div id="segSplitList"></div>
+        </div>
+      </div>
+      <div class="section-head">Top news stories today</div>
+
+      
+      <div class="panel" style="margin-bottom:16px;">
+        <h3>Top stories today <span>ranked by outlets + score</span></h3>
+        <div id="clusterList"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Share of voice vs. industry</h3>
+          <div id="sovNewsList"></div>
+        </div>
+        <div class="panel">
+          <h3>Spokesperson &amp; exec mentions</h3>
+          <div id="spokespersonList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. TRENDS (AI industry + social trends merged) -->
+    <div class="page" id="page-trends">
+      <div class="page-title"><div><h2>Trends</h2><p>What the industry is talking about, and what's working on social right now.</p></div></div>
+      <div class="section-head">What the industry is talking about</div>
+
+      
+      <div class="panel">
+        <h3>How people feel about it</h3>
+        <div id="narrativeList"></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <h3>New launches worth knowing about</h3>
+        <table class="topic-table">
+          <thead><tr><th>Date</th><th>Company</th><th>Launch</th><th>Category</th></tr></thead>
+          <tbody id="launchTable"></tbody>
+        </table>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Big money moves</h3>
+          <div id="fundingList"></div>
+        </div>
+        <div class="panel">
+          <h3>Rules &amp; policy changes</h3>
+          <div id="regList"></div>
+        </div>
+      </div>
+      <div class="section-head">What's working on social</div>
+
+      
+      <div class="grid2">
+        <div class="panel">
+          <h3>Popular hashtags right now</h3>
+          <div id="hashtagList"></div>
+        </div>
+        <div class="panel">
+          <h3>What kind of post works best</h3>
+          <div class="chart-wrap"><canvas id="formatChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <h3>Posts taking off fast</h3>
+        <table class="topic-table">
+          <thead><tr><th>Post</th><th>Platform</th><th>1hr engagement</th><th>Taking off?</th></tr></thead>
+          <tbody id="velocityTable"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h3>Who's growing fastest</h3>
+        <div id="growthList"></div>
+      </div>
+    </div>
+
+    <!-- 5. SETTINGS (topics + alerts + charts + ILMU merged) -->
+    <div class="page" id="page-settings">
+      <div class="page-title"><div><h2>Settings</h2><p>What we track, how you get notified, and the assistant connection.</p></div></div>
+
+      <div class="section-head">Connect ILMU (smarter answers)</div>
+      <div class="panel" style="margin-bottom:20px;">
+        <p style="font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;">
+          By default the assistant answers using built-in logic. Connect your ILMU webhook and it will send your question to ILMU instead, for genuine conversational answers.
+          <br><br><strong style="color:var(--amber);">Note:</strong> anything entered here is visible to anyone who opens this page. For real deployment, route through a proxy rather than calling ILMU directly from the browser.
+        </p>
+        <div class="field-row" style="flex-direction:column;align-items:stretch;gap:10px;">
+          <input type="text" id="ilmuUrl" placeholder="ILMU webhook URL (e.g. https://btym-wflow.shop/webhook/...)" style="width:100%;">
+          <input type="password" id="ilmuToken" placeholder="x-agent-token value" style="width:100%;">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-solid" onclick="saveIlmu()">Connect</button>
+            <button class="dm-btn" style="flex:0 0 auto;padding:9px 15px;" onclick="testIlmu()">Test connection</button>
+            <span id="ilmuStatus" style="font-size:11.5px;color:var(--text-dim);">Not connected — using built-in answers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head">What we track</div>
+
+            <div class="topic-add">
+        <input type="text" id="newTopicInput" placeholder="Add a topic to track…">
+        <button class="btn-solid" id="addTopicBtn" onclick="addTopic()">Add topic</button>
+      </div>
+      <div class="topic-limit-note" id="topicLimitNote">6 of 10 topics used</div>
+      <div class="panel">
+        <table class="topic-table">
+          <thead><tr><th>Topic</th><th>Mentions today</th><th>Sentiment</th><th>7-day trend</th><th></th></tr></thead>
+          <tbody id="topicTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-head">Notifications</div>
+
+      
+      <div class="alert-row">
+        <div><div class="alert-info">Negative sentiment spike</div><div class="alert-sub">Notify if negative mentions jump sharply in a short window</div></div>
+        <div class="switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="alert-row">
+        <div><div class="alert-info">Volume spike</div><div class="alert-sub">Notify if mention volume on any topic surges beyond normal</div></div>
+        <div class="switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="alert-row">
+        <div><div class="alert-info">High-influence mention</div><div class="alert-sub">Notify when a large account mentions a tracked topic</div></div>
+        <div class="switch" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="alert-row">
+        <div><div class="alert-info">Daily digest email</div><div class="alert-sub">One summary email each morning instead of individual alerts</div></div>
+        <div class="switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="panel" style="margin-top:16px;">
+        <h3>Digest settings</h3>
+        <div class="field-row">
+          <select><option>Send at 8:00 AM</option><option>Send at 9:00 AM</option><option>Send at 7:00 AM</option></select>
+          <select><option>Every weekday</option><option>Every day</option><option>Weekly, Monday</option></select>
+          <input type="text" placeholder="pr-team@ytlcc.com" style="flex:1;">
+        </div>
+      </div>
+
+      <div class="section-head">Charts</div>
+
+            <div class="grid2">
+        <div class="panel"><h3>Platform breakdown</h3><div class="chart-wrap"><canvas id="platformChart"></canvas></div></div>
+        <div class="panel"><h3>Sentiment over 7 days</h3><div class="chart-wrap"><canvas id="trendChart"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <h3>Share of voice vs competitors</h3>
+        <div id="sovList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeDetail()"></div>
+<div class="detail-modal" id="detailModal">
+  <div class="dm-head">
+    <div>
+      <span class="dm-eyebrow" id="dmEyebrow">—</span>
+      <h2 id="dmTitle">—</h2>
+    </div>
+    <button class="dm-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="dm-body">
+    <div class="dm-meta" id="dmMeta"></div>
+    <div id="dmStrength" style="margin-bottom:14px;"></div>
+    <div class="dm-stats" id="dmStats"></div>
+    <div class="dm-section-label">Case status</div>
+    <div class="status-picker" id="dmStatusPicker"></div>
+    <div class="dm-section-label">Why this ranked where it did</div>
+    <div id="dmBreakdown"></div>
+    <div class="dm-section-label">Also covered by</div>
+    <div id="dmRelated"></div>
+    <div class="dm-actions">
+      <button class="dm-btn primary" onclick="dmSummarise()">Summarise with assistant</button>
+      <button class="dm-btn" id="dmOpenLink">Open source</button>
+    </div>
+  </div>
+</div>
+
+<div class="bot-modal-overlay" id="botModalOverlay" onclick="if(botExpanded) toggleExpand()"></div>
+<div class="bot-dock">
+  <div class="bot-panel hidden" id="botPanel">
+    <div class="bot-head">
+      <div class="bot-avatar"></div>
+      <div><div class="bot-name">Ask me anything</div><div class="bot-status" id="botStatusLine">● I can see everything in your feed</div></div>
+      <button class="bot-expand" id="botExpandBtn" onclick="toggleExpand()" title="Bigger view">⤢</button>
+      <button class="bot-close" onclick="toggleBot()">✕</button>
+    </div>
+    <div class="bot-body" id="botBody">
+      <div class="bot-bubble bot">Hi Bradley. Ask me anything about what's happening — in plain English. Try one below, or type your own question.</div>
+    </div>
+    <div class="bot-quick">
+      <span class="bot-chip" onclick="botAsk('day')">Tell me my day</span>
+      <span class="bot-chip" onclick="botAsk('top')">Worth my time</span>
+      <span class="bot-chip" onclick="botAsk('action')">What should I do?</span>
+      <span class="bot-chip" onclick="botAsk('negative')">Anything bad?</span>
+    </div>
+    <div class="bot-input">
+      <input type="text" id="botInput" placeholder="e.g. what should I care about today?">
+      <button onclick="botSend()">Ask</button>
+    </div>
+  </div>
+  <button class="bot-toggle" onclick="toggleBot()"><span class="bot-ico">◆</span> Ask me anything</button>
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const platforms = ['X','Instagram','Facebook','Reddit','YouTube','News'];
+const platformIcons = {X:'𝕏',Instagram:'📷',Facebook:'👍',Reddit:'💬',YouTube:'▶️',News:'📰'};
+const sentiments = ['pos','neu','neg'];
+const sentWeights = [0.5,0.32,0.18];
+
+let topics = [
+  {name:'YTL Corporation', count:0, seg:'Group'},
+  {name:'YTL Power International', count:0, seg:'Utilities'},
+  {name:'Sovereign AI Malaysia', count:0, seg:'Data Centre & AI'},
+  {name:'YTL data centre', count:0, seg:'Data Centre & AI'},
+  {name:'Malayan Cement', count:0, seg:'Cement'},
+  {name:'Yes 4G / Ryt Bank', count:0, seg:'Digital'}
+];
+
+/* YTL business map — drives the YTL Watch page */
+const ytlSegments = [
+  {seg:'Utilities & Power', ytl:'YTL Power International, Wessex Water (UK), PowerSeraya (SG), Ranhill Utilities', rivals:['Tenaga Nasional (TNB)','Malakoff','Sunway Energy']},
+  {seg:'Data Centre & AI', ytl:'YTL Green Data Center Park (Kulai), NVIDIA partnership, sovereign AI compute', rivals:['TNB / Tenaga DC ventures','Bridge Data Centres','AirTrunk','Princeton Digital Group']},
+  {seg:'Cement & Building Materials', ytl:'Malayan Cement, YTL Cement', rivals:['Hume Cement','Cement Industries of Malaysia','Tasek Corporation']},
+  {seg:'Construction', ytl:'YTL Construction, Express Rail Link', rivals:['Gamuda','IJM Corporation','Sunway Construction','WCT Holdings']},
+  {seg:'Property', ytl:'YTL Land & Development', rivals:['SP Setia','Sime Darby Property','IOI Properties','Mah Sing']},
+  {seg:'Hospitality', ytl:'YTL Hospitality REIT, YTL Hotels', rivals:['Genting Malaysia','Shangri-La Malaysia','Sunway Hospitality']},
+  {seg:'Telco & Digital Banking', ytl:'YTL Communications (Yes 4G), Ryt Bank', rivals:['Maxis','CelcomDigi','U Mobile','TM','GXBank','Boost Bank','AEON Bank']}
+];
+
+const authorPool = {
+  X:['@theedgemalaysia','@BursaMktplc','@KLSEinvestor','@MYbusinessdaily','@asiainfratech'],
+  Instagram:['@theedgemalaysia','@ytlcommunity','@mydigitaleconomy'],
+  Facebook:['The Edge Malaysia','Malaysia Business Forum','Bursa Malaysia Investors'],
+  Reddit:['r/malaysia','r/MalaysianPF','r/technology','r/investing'],
+  YouTube:['CNBC International','Channel News Asia','BFM 89.9','The Edge TV'],
+  News:['Reuters','Bloomberg','The Edge Malaysia','Bernama','Nikkei Asia','The Star','New Straits Times']
+};
+
+const snippetTemplates = {
+  pos:[
+    "{t} lands major regional partnership — analysts call it a strong strategic fit for the group's infrastructure play.",
+    "Strong quarterly showing from {t}, with utilities revenue beating consensus expectations.",
+    "{t} expansion into green data centre capacity seen as well-timed against regional demand.",
+    "Investor sentiment turning positive on {t} following the latest compute infrastructure announcement.",
+    "{t} named among top performers on the FTSE Bursa Malaysia KLCI this quarter."
+  ],
+  neu:[
+    "{t} confirms it is reviewing options for its next phase of infrastructure investment.",
+    "Analyst note on {t} maintains hold rating pending clarity on capital expenditure timeline.",
+    "Panel discussion this week covering {t} and the wider Malaysian digital infrastructure landscape.",
+    "{t} referenced in a broader report on Southeast Asian utilities and data centre growth.",
+    "Regulatory filing from {t} outlines updated segment reporting structure."
+  ],
+  neg:[
+    "Questions raised over {t} capital allocation as competitors accelerate their own build-outs.",
+    "Concerns emerging around {t} project timelines amid rising construction input costs.",
+    "Critics argue {t} is overexposed to a single segment as margins tighten.",
+    "Thread questioning whether {t} valuations have run ahead of delivered fundamentals."
+  ]
+};
+
+let allMentions = [];
+let mentionsToday = 0;
+let activeFilter = 'All';
+let liveCounts = new Array(20).fill(0);
+
+/* ===== NAV ===== */
+document.querySelectorAll('.navitem').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.navitem').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('page-'+el.dataset.page).classList.add('active');
+  });
+});
+
+/* ===== MENTION GENERATION ===== */
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function weightedSentiment(){
+  const r = Math.random();
+  if(r < sentWeights[0]) return 'pos';
+  if(r < sentWeights[0]+sentWeights[1]) return 'neu';
+  return 'neg';
+}
+function genMention(){
+  const topic = pick(topics);
+  const platform = pick(platforms);
+  const sentiment = weightedSentiment();
+  const text = pick(snippetTemplates[sentiment]).replace('{t}', topic.name);
+  const author = pick(authorPool[platform]);
+  const engagement = Math.floor(Math.random()*400) + (platform==='News'?50:5);
+  const m = {
+    id: Date.now()+Math.random(),
+    topic: topic.name, platform, sentiment, text, author, engagement,
+    time: 'just now'
+  };
+  if(!passesFilter(m)){ filteredOutCount++; return null; }
+  topic.count++;
+  mentionsToday++;
+  allMentions.unshift(m);
+  if(allMentions.length > 120) allMentions.pop();
+  return m;
+}
+
+/* ===== NOISE CONTROL — the filter that stops every random post getting in ===== */
+const AUTHORITY = {
+  'reuters.com':95,'bloomberg.com':95,'ft.com':92,'nikkei.com':90,'theedgemalaysia.com':88,
+  'bernama.com':85,'thestar.com.my':82,'nst.com.my':80,'channelnewsasia.com':85,
+  'businesstimes.com.sg':84,'straitstimes.com':84,'malaymail.com':70,'freemalaysiatoday.com':68,
+  'Reuters':95,'Bloomberg':95,'The Edge Malaysia':88,'Bernama':85,'Nikkei Asia':90
+};
+let noiseThreshold = 45;      // items below this relevance score never enter the feed
+let requireAuthority = false;  // when on, only recognised outlets get through
+
+function authorityFor(src){
+  if(!src) return 50;
+  const key = Object.keys(AUTHORITY).find(k => String(src).toLowerCase().includes(k.toLowerCase()));
+  return key ? AUTHORITY[key] : 45;
+}
+
+function relevanceScore(item){
+  let score = 0;
+  const text = (item.text||'').toLowerCase();
+  // 1. Source authority (0-40)
+  score += authorityFor(item.author) * 0.4;
+  // 2. Topic keyword strength (0-30) — does it actually name the thing?
+  const topicWords = (item.topic||'').toLowerCase().split(/[\s\/]+/).filter(w=>w.length>3);
+  const hits = topicWords.filter(w=>text.includes(w)).length;
+  score += Math.min(30, hits * 15);
+  // 3. Engagement signal (0-15)
+  const eng = typeof item.engagement === 'number' ? item.engagement : 0;
+  score += Math.min(15, eng/30);
+  // 4. Real news bonus (0-15)
+  if(item.real) score += 15;
+  return Math.round(Math.min(100, score));
+}
+
+function passesFilter(item){
+  item.relevance = relevanceScore(item);
+  if(requireAuthority && authorityFor(item.author) < 60) return false;
+  return item.relevance >= noiseThreshold;
+}
+
+let filteredOutCount = 0;
+
+/* ===== REAL NEWS INGESTION (GDELT + Hacker News — free, keyless, CORS-open) ===== */
+const seenUrls = new Set();
+
+async function fetchGdelt(topic){
+  try{
+    const q = encodeURIComponent('"'+topic+'"');
+    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&format=json&maxrecords=6&sort=datedesc&timespan=24h`;
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return (data.articles||[]).map(a=>({
+      author: a.domain || 'news',
+      text: a.title,
+      url: a.url,
+      platform: 'News',
+      topic, real: true,
+      sentiment: 'neu',
+      engagement: '—',
+      time: (a.seendate||'').replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
+    }));
+  }catch(e){ return []; }
+}
+
+async function fetchHN(topic){
+  try{
+    const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(topic)}&tags=story&hitsPerPage=4`;
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return (data.hits||[]).filter(h=>h.title).map(h=>({
+      author: 'Hacker News · '+(h.author||''),
+      text: h.title,
+      url: h.url || ('https://news.ycombinator.com/item?id='+h.objectID),
+      platform: 'News',
+      topic, real: true,
+      sentiment: 'neu',
+      engagement: (h.points||0)+' pts · '+(h.num_comments||0)+' cmts',
+      time: h.created_at ? new Date(h.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'today'
+    }));
+  }catch(e){ return []; }
+}
+
+async function pullRealNews(){
+  const banner = document.getElementById('realStatus');
+  if(banner) banner.textContent = 'fetching live news…';
+  const targets = topics.slice(0,4).map(t=>t.name);
+  let added = 0;
+  for(const t of targets){
+    const [g,h] = await Promise.all([fetchGdelt(t), fetchHN(t)]);
+    for(const item of [...g,...h]){
+      if(seenUrls.has(item.url)) continue;
+      seenUrls.add(item.url);
+      if(!passesFilter(item)){ filteredOutCount++; continue; }
+      item.id = Date.now()+Math.random();
+      allMentions.unshift(item);
+      mentionsToday++;
+      added++;
+    }
+  }
+  if(allMentions.length > 150) allMentions.length = 150;
+  if(banner) banner.textContent = added ? `live news updated · ${added} new real articles` : 'live news up to date';
+  renderDashFeed(); renderMentionsFeed(); renderGrid(); renderKpis();
+}
+
+function sentClass(s){ return s==='pos'?'sent-pos':s==='neg'?'sent-neg':'sent-neu'; }
+function sentLabel(s){ return s==='pos'?'Positive':s==='neg'?'Negative':'Neutral'; }
+
+function mentionHTML(m){
+  const badge = m.real ? '<span class="m-tag tag-real">LIVE</span>' : '<span class="m-tag tag-sim">DEMO</span>';
+  const body = m.real && m.url
+    ? `<a href="${m.url}" target="_blank" rel="noopener" style="text-decoration:underline;text-decoration-color:var(--line);">${m.text}</a>`
+    : m.text;
+  return `<div class="mention" style="cursor:pointer;" onclick="openDetail('${m.id}')">
+    <div class="m-ic">${platformIcons[m.platform]}</div>
+    <div class="m-body">
+      <div class="m-top"><span class="m-author">${m.author}</span><span class="m-time">${m.time}</span></div>
+      <div class="m-text">${body}</div>
+      <div class="m-foot">
+        ${strengthBadge(m)}
+        ${caseStatusBadge(m.id)}
+        ${badge}
+        <span class="m-tag tag-topic">${m.topic}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDashFeed(){
+  document.getElementById('dashFeed').innerHTML = allMentions.slice(0,8).map(mentionHTML).join('');
+}
+function renderMentionsFeed(){
+  const filtered = searchResults();
+  document.getElementById('mentionsFeed').innerHTML = filtered.slice(0,60).map(mentionHTML).join('') || '<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12.5px;">No mentions yet for this filter.</div>';
+}
+
+/* ===== FILTERS ===== */
+function setFilter(p){
+  activeFilter = p;
+  renderMentionsFeed();
+}
+
+/* ===== TOPICS PAGE ===== */
+function renderTopics(){
+  document.getElementById('topicLimitNote').textContent = `${topics.length} of 10 topics used`;
+  document.getElementById('addTopicBtn').disabled = topics.length >= 10;
+  document.getElementById('topicTableBody').innerHTML = topics.map((t,i)=>{
+    const spark = Array.from({length:7},()=>Math.floor(Math.random()*20)+2);
+    const max = Math.max(...spark);
+    const points = spark.map((v,idx)=> `${idx*13},${24-(v/max)*22}`).join(' ');
+    return `<tr>
+      <td><strong>${t.name}</strong></td>
+      <td class="mono">${t.count}</td>
+      <td><span class="m-tag sent-pos" style="font-size:10.5px;">Mostly positive</span></td>
+      <td><svg class="sparkline" viewBox="0 0 80 24"><polyline points="${points}" fill="none" stroke="#0e9c86" stroke-width="1.5"/></svg></td>
+      <td><span class="rm" style="cursor:pointer;color:var(--text-dim2);" onclick="removeTopic(${i})">✕</span></td>
+    </tr>`;
+  }).join('');
+}
+function addTopic(){
+  const input = document.getElementById('newTopicInput');
+  const val = input.value.trim();
+  if(!val || topics.length>=10) return;
+  topics.push({name:val, count:0});
+  input.value='';
+  renderTopics();
+}
+function removeTopic(i){
+  topics.splice(i,1);
+  renderTopics();
+}
+document.getElementById('newTopicInput').addEventListener('keydown', e=>{ if(e.key==='Enter') addTopic(); });
+
+/* ===== INFLUENCERS ===== */
+function renderInfluencers(){
+  const top = [...allMentions].sort((a,b)=>b.engagement-a.engagement).slice(0,5);
+  document.getElementById('influencerList').innerHTML = top.map(m=>`
+    <div class="influencer-row">
+      <div class="inf-av">${m.author.replace('@','').slice(0,2).toUpperCase()}</div>
+      <div class="inf-info"><div class="inf-name">${m.author}</div><div class="inf-meta">${m.platform} · ${m.topic}</div></div>
+      <div class="inf-eng">${m.engagement}</div>
+    </div>
+  `).join('') || '<div style="font-size:12px;color:var(--text-dim);padding:10px 0;">Waiting for mentions…</div>';
+}
+
+/* ===== SHARE OF VOICE ===== */
+function renderSov(){
+  const you = 100 + allMentions.length;
+  const comp1 = Math.floor(you*0.7);
+  const comp2 = Math.floor(you*0.45);
+  const total = you+comp1+comp2;
+  const rows = [
+    {name:'YTL / Sovereign AI (you)', val:you, color:'#e2386b'},
+    {name:'Competitor A', val:comp1, color:'#2469c9'},
+    {name:'Competitor B', val:comp2, color:'#c9821e'}
+  ];
+  document.getElementById('sovList').innerHTML = rows.map(r=>{
+    const pct = Math.round(r.val/total*100);
+    return `<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${r.name}</span><span class="mono">${pct}%</span></div>
+      <div class="sov-bar"><div class="sov-seg" style="width:${pct}%;background:${r.color};"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== KPIs ===== */
+function renderKpis(){
+  document.getElementById('kpiMentions').textContent = mentionsToday;
+  document.getElementById('kpiMentionsDelta').textContent = '↑ ' + Math.max(3,Math.round(mentionsToday*0.15)) + ' vs yesterday';
+  const pos = allMentions.filter(m=>m.sentiment==='pos').length;
+  const pct = allMentions.length ? Math.round(pos/allMentions.length*100) : 0;
+  document.getElementById('kpiSentiment').textContent = pct+'%';
+  document.getElementById('kpiSentimentSub').textContent = pct+'% positive';
+  document.getElementById('kpiReach').textContent = ((mentionsToday*1800)/1000).toFixed(1)+'K';
+  document.getElementById('kpiSov').textContent = Math.min(99, 38+Math.floor(mentionsToday/3))+'%';
+  document.getElementById('totalCount').textContent = mentionsToday+' mentions today';
+}
+
+/* ===== CHARTS ===== */
+let platformChart, trendChart;
+function initCharts(){
+  const ctx3 = document.getElementById('platformChart')?.getContext('2d');
+  if(ctx3){
+    platformChart = new Chart(ctx3, {
+      type:'bar',
+      data:{labels:platforms, datasets:[{data:platforms.map(()=>0), backgroundColor:'#2469c9', borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}
+    });
+  }
+  const ctx4 = document.getElementById('trendChart')?.getContext('2d');
+  if(ctx4){
+    trendChart = new Chart(ctx4, {
+      type:'line',
+      data:{labels:['-6d','-5d','-4d','-3d','-2d','-1d','Today'], datasets:[
+        {label:'Positive', data:[12,15,14,18,20,22,24], borderColor:'#0e9c86', backgroundColor:'transparent', tension:.3},
+        {label:'Negative', data:[4,3,5,4,3,6,5], borderColor:'#e2386b', backgroundColor:'transparent', tension:.3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10.5},boxWidth:10}}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}
+    });
+  }
+  const ctx5 = document.getElementById('momentumChart')?.getContext('2d');
+  if(ctx5){
+    new Chart(ctx5, {
+      type:'line',
+      data:{labels:['-6d','-5d','-4d','-3d','-2d','-1d','Today'], datasets:[
+        {label:'Sovereign AI', data:[20,24,26,31,38,44,52], borderColor:'#e2386b', backgroundColor:'transparent', tension:.3},
+        {label:'AI Regulation', data:[10,11,13,12,14,16,18], borderColor:'#2469c9', backgroundColor:'transparent', tension:.3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10.5},boxWidth:10}}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}
+    });
+  }
+  const ctx6 = document.getElementById('formatChart')?.getContext('2d');
+  if(ctx6){
+    new Chart(ctx6, {
+      type:'bar',
+      data:{labels:['Reels','Carousel','Static image','Link post'], datasets:[{data:[6.8,3.4,2.1,1.2], backgroundColor:'#e2386b', borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,title:{display:true,text:'% eng. rate',font:{size:10}},ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}
+    });
+  }
+}
+function updateCharts_END(){}
+/* end chart additions */
+function updateCharts(){
+  if(platformChart){
+    const counts = platforms.map(p=>allMentions.filter(m=>m.platform===p).length);
+    platformChart.data.datasets[0].data = counts;
+    platformChart.update('none');
+  }
+  renderGlance();
+}
+function renderGlance(){
+  const el = document.getElementById('glanceList');
+  if(!el) return;
+  const real = allMentions.filter(m=>m.real).length;
+  const pos = allMentions.filter(m=>m.sentiment==='pos').length;
+  const neg = allMentions.filter(m=>m.sentiment==='neg').length;
+  const pct = allMentions.length ? Math.round(pos/allMentions.length*100) : 0;
+  const topTopic = [...topics].sort((a,b)=>b.count-a.count)[0];
+  el.innerHTML = [
+    ['Live news articles', real],
+    ['Most active topic', topTopic ? topTopic.name : '—'],
+    ['Positive share', pct+'%'],
+    ['Negative items', neg]
+  ].map(([l,v])=>`<div class="data-row"><div class="drl">${l}</div><div class="drv">${v}</div></div>`).join('');
+}
+
+/* ===== AI TRENDS DATA ===== */
+const launches = [
+  {date:'Aug 5', company:'Anthropic', launch:'Claude Sonnet 5', cat:'Frontier model'},
+  {date:'Aug 3', company:'Google DeepMind', launch:'Gemini enterprise compute tier', cat:'Infrastructure'},
+  {date:'Jul 30', company:'Sovereign AI Consortium (MY)', launch:'National compute grid pilot', cat:'Sovereign AI'},
+  {date:'Jul 27', company:'Nvidia', launch:'Regional AI chip partnership', cat:'Hardware'},
+];
+const funding = [
+  {org:'Southeast Asia Sovereign AI Fund', amount:'$1.2B', round:'Government-backed'},
+  {org:'RegTech AI startup (SG)', amount:'$40M', round:'Series B'},
+  {org:'Malaysia AI infra JV', amount:'$310M', round:'Strategic partnership'},
+];
+const regMoves = [
+  {region:'ASEAN', action:'Draft cross-border AI data governance framework', status:'proposed'},
+  {region:'Malaysia', action:'National AI compute strategy formally adopted', status:'live'},
+  {region:'EU', action:'AI Act enforcement guidance for sovereign systems', status:'live'},
+  {region:'US', action:'Export controls on AI chips to certain markets', status:'blocked'},
+];
+const narratives = [
+  {name:'Sovereign AI investment', sentiment:72}, {name:'AI regulation pace', sentiment:41},
+  {name:'AI infrastructure race', sentiment:64}, {name:'AI job displacement', sentiment:28}
+];
+
+function renderAiTrends(){
+  document.getElementById('launchTable').innerHTML = launches.map(l=>`<tr><td class="mono">${l.date}</td><td><strong>${l.company}</strong></td><td>${l.launch}</td><td><span class="m-tag tag-topic">${l.cat}</span></td></tr>`).join('');
+  document.getElementById('fundingList').innerHTML = funding.map(f=>`
+    <div class="data-row"><div class="drl"><strong>${f.org}</strong><div class="sub">${f.round}</div></div><div class="drv">${f.amount}</div></div>`).join('');
+  document.getElementById('regList').innerHTML = regMoves.map(r=>`
+    <div class="data-row"><div class="drl"><strong>${r.region}</strong><div class="sub">${r.action}</div></div><span class="status-pill status-${r.status}">${r.status}</span></div>`).join('');
+  document.getElementById('narrativeList').innerHTML = narratives.map(n=>{
+    const color = n.sentiment>=60?'#0e9c86':n.sentiment>=40?'#c9821e':'#e2386b';
+    return `<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${n.name}</span><span class="mono">${n.sentiment}%</span></div><div class="sov-bar"><div class="sov-seg" style="width:${n.sentiment}%;background:${color};"></div></div></div>`;
+  }).join('');
+}
+
+/* ===== SOCIAL TRENDS DATA ===== */
+const hashtags = [
+  {tag:'#SovereignAI', vol:'18.2K posts', growth:'+340%'}, {tag:'#AIRegulation', vol:'9.4K posts', growth:'+95%'},
+  {tag:'#AIInfrastructure', vol:'6.1K posts', growth:'+180%'}, {tag:'#DigitalMalaysia', vol:'4.8K posts', growth:'+62%'},
+  {tag:'#AIPolicy', vol:'3.9K posts', growth:'+41%'}
+];
+const viralPosts = [
+  {post:'"Why sovereign AI actually matters" carousel', plat:'Instagram', eng:'4,200', vel:'high'},
+  {post:'Reel: AI data center walkthrough', plat:'Instagram', vel:'high', eng:'6,800'},
+  {post:'FB post: regional AI chip deal explainer', plat:'Facebook', eng:'1,900', vel:'medium'},
+  {post:'Reel: "AI sovereignty explained in 30s"', plat:'Instagram', eng:'11,300', vel:'high'},
+];
+const growthAccounts = [
+  {name:'@ytlcreative', platform:'Instagram', growth:'+2.4%', followers:'18.9K'},
+  {name:'YTL Group', platform:'Facebook', growth:'+1.1%', followers:'142K'},
+  {name:'Competitor A', platform:'Instagram', growth:'+4.8%', followers:'31.2K'},
+];
+
+function renderSocialTrends(){
+  document.getElementById('hashtagList').innerHTML = hashtags.map(h=>`
+    <div class="data-row"><div class="drl"><strong>${h.tag}</strong><div class="sub">${h.vol}</div></div><div class="drv up-arrow">${h.growth}</div></div>`).join('');
+  document.getElementById('velocityTable').innerHTML = viralPosts.map(v=>`
+    <tr><td>${v.post}</td><td><span class="m-tag tag-topic">${v.plat}</span></td><td class="mono">${v.eng}</td><td><span class="status-pill ${v.vel==='high'?'status-live':'status-proposed'}">${v.vel}</span></td></tr>`).join('');
+  document.getElementById('growthList').innerHTML = growthAccounts.map(g=>`
+    <div class="data-row"><div class="drl"><strong>${g.name}</strong><div class="sub">${g.platform} · ${g.followers} followers</div></div><div class="drv up-arrow">${g.growth}</div></div>`).join('');
+}
+
+/* ===== NEWS / CLUSTERS DATA ===== */
+const newsClusters = [
+  {headline:'Malaysia unveils national AI compute strategy', outlets:8, score:92, sentiment:'pos'},
+  {headline:'Japan, Malaysia sign MOU on AI chip supply chain', outlets:4, score:88, sentiment:'pos'},
+  {headline:'Gulf states pour billions into sovereign AI', outlets:3, score:84, sentiment:'pos'},
+  {headline:'Regulators weigh cross-border AI data framework', outlets:3, score:65, sentiment:'neu'},
+  {headline:'Sovereign AI push criticized as costly nationalism', outlets:3, score:58, sentiment:'neg'},
+];
+const sovNews = [{name:'YTL / Sovereign AI (you)', pct:38, color:'#e2386b'},{name:'Competitor A', pct:31, color:'#2469c9'},{name:'Competitor B', pct:19, color:'#c9821e'},{name:'Other', pct:12, color:'#9a9ea9'}];
+const spokespeople = [
+  {name:'CEO, YTL Power', mentions:6, sentiment:'pos'}, {name:'Head of Digital, YTLCC', mentions:3, sentiment:'neu'},
+  {name:'Competitor A CEO', mentions:9, sentiment:'pos'}
+];
+
+function renderNews(){
+  document.getElementById('clusterList').innerHTML = newsClusters.map((c,i)=>`
+    <div class="data-row"><div class="drl"><strong>${i+1}. ${c.headline}</strong><div class="sub">${c.outlets} outlets covering</div></div>
+    <div style="display:flex;align-items:center;gap:10px;"><span class="m-tag ${sentClass(c.sentiment)}">${sentLabel(c.sentiment)}</span><span class="drv">${c.score}</span></div></div>`).join('');
+  document.getElementById('sovNewsList').innerHTML = sovNews.map(s=>`
+    <div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${s.name}</span><span class="mono">${s.pct}%</span></div><div class="sov-bar"><div class="sov-seg" style="width:${s.pct}%;background:${s.color};"></div></div></div>`).join('');
+  document.getElementById('spokespersonList').innerHTML = spokespeople.map(s=>`
+    <div class="data-row"><div class="drl"><strong>${s.name}</strong><div class="sub">${s.mentions} mentions this week</div></div><span class="m-tag ${sentClass(s.sentiment)}">${sentLabel(s.sentiment)}</span></div>`).join('');
+}
+
+/* ===== GRID PAGE ===== */
+let gridFilter = 'All';
+document.getElementById('gridFilters').innerHTML = ['All',...platforms].map(p=>
+  `<div class="fchip ${p==='All'?'active':''}" data-p="${p}" onclick="setGridFilter('${p}')">${p}</div>`).join('');
+function setGridFilter(p){
+  gridFilter = p;
+  activeFilter = p;
+  document.querySelectorAll('#gridFilters .fchip').forEach(f=>f.classList.toggle('active', f.dataset.p===p));
+  runSearch();
+}
+
+function scoreWord(s){
+  if(s == null) return {w:'—', c:'sw-low'};
+  if(s >= 75) return {w:'Must read', c:'sw-high'};
+  if(s >= 55) return {w:'Worth a look', c:'sw-mid'};
+  return {w:'Low priority', c:'sw-low'};
+}
+function sentDot(s){ return s==='pos'?'#0e9c86':s==='neg'?'#e2386b':'#9a9ea9'; }
+
+const tileTints = ['#fbe1ea','#e2edfb','#e0f6f1','#fbedd9','#f0f2f6'];
+function tileTint(i){ return tileTints[i % tileTints.length]; }
+function tileText(i){ return ['#7a1734','#123c73','#0a5b4d','#6b4409','#3a3d49'][i % 5]; }
+
+const strengthTint = {'st-strongpos':['#d6f3ee','#0a5b4d'],'st-pos':['#e0f6f1','#0e9c86'],'st-urgent':['#fbe1ea','#c22458'],'st-watch':['#fbedd9','#9c6a12'],'st-neutral':['#f0f2f6','#4a4f5c']};
+function renderGrid(){
+  const items = searchResults().slice(0,24);
+  document.getElementById('igGrid').innerHTML = items.map((m,i)=>{
+    const s = strengthOf(m);
+    const [bg,fg] = strengthTint[s.cls];
+    return `
+    <div class="ig-card" onclick="openDetail('${m.id}')">
+      <div class="ig-fill" style="background:${bg};color:${fg};">
+        <span class="ig-topic">${m.topic}</span>
+        <span class="ig-headline">${highlight((m.text||'').slice(0,110))}${(m.text||'').length>110?'…':''}</span>
+      </div>
+      <span class="ig-plat">${platformIcons[m.platform]} ${m.platform}</span>
+      <span class="ig-sent" style="background:${sentDot(m.sentiment)};"></span>
+      <div class="ig-eng"><span>${String(m.author).slice(0,18)}</span><span>${s.label}</span></div>
+    </div>`;
+  }).join('') || '<div style="padding:30px;color:var(--text-dim);font-size:12.5px;">No posts pass the current filter — try lowering the threshold on the Dashboard.</div>';
+}
+
+/* ===== DETAIL MODAL ===== */
+let currentDetail = null;
+function openDetail(id){
+  const m = allMentions.find(x=>String(x.id)===String(id));
+  if(!m) return;
+  currentDetail = m;
+  document.getElementById('dmEyebrow').textContent = m.topic + ' · ' + m.platform;
+  document.getElementById('dmTitle').textContent = m.text;
+  document.getElementById('dmMeta').innerHTML =
+    `<span><strong>${m.author}</strong></span><span>·</span><span>${m.time}</span>`+
+    `<span class="m-tag ${m.real?'tag-real':'tag-sim'}">${m.real?'LIVE':'DEMO'}</span>`;
+  document.getElementById('dmStrength').innerHTML = strengthBadge(m);
+  renderCaseStatusPicker();
+  document.getElementById('dmStats').innerHTML = `
+    <div class="dm-stat"><div class="n">${m.relevance ?? '—'}</div><div class="l">${scoreWord(m.relevance).w}</div></div>
+    <div class="dm-stat"><div class="n">${authorityFor(m.author)}</div><div class="l">How trusted</div></div>
+    <div class="dm-stat"><div class="n">${typeof m.engagement==='number'?m.engagement:'—'}</div><div class="l">Engagement</div></div>`;
+
+  const auth = authorityFor(m.author);
+  const topicWords = (m.topic||'').toLowerCase().split(/[\s\/]+/).filter(w=>w.length>3);
+  const hits = topicWords.filter(w=>(m.text||'').toLowerCase().includes(w)).length;
+  const kwScore = Math.min(30, hits*15);
+  const engScore = Math.min(15, (typeof m.engagement==='number'?m.engagement:0)/30);
+  const breakdown = [
+    ['Source authority', Math.round(auth*0.4), 40],
+    ['Keyword match', kwScore, 30],
+    ['Engagement', Math.round(engScore), 15],
+    ['Verified news', m.real?15:0, 15]
+  ];
+  document.getElementById('dmBreakdown').innerHTML = breakdown.map(([l,v,max])=>`
+    <div class="dm-bar-row"><span class="lbl">${l}</span><div class="dm-bar"><div style="width:${(v/max)*100}%"></div></div><span class="v">${v}/${max}</span></div>`).join('');
+
+  const related = allMentions.filter(x=>x.topic===m.topic && x.id!==m.id).slice(0,4);
+  document.getElementById('dmRelated').innerHTML = related.length
+    ? related.map(r=>`<div class="data-row" style="cursor:pointer;" onclick="openDetail('${r.id}')"><div class="drl"><strong>${r.author}</strong><div class="sub">${(r.text||'').slice(0,68)}…</div></div><div class="drv">${r.relevance ?? '—'}</div></div>`).join('')
+    : '<div style="font-size:12px;color:var(--text-dim);">No other coverage on this topic yet.</div>';
+
+  const linkBtn = document.getElementById('dmOpenLink');
+  if(m.real && m.url){ linkBtn.style.display='block'; linkBtn.onclick = ()=>window.open(m.url,'_blank'); }
+  else { linkBtn.style.display='none'; }
+
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeDetail(){
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('detailModal').classList.remove('show');
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDetail(); });
+
+/* ===== NOISE CONTROLS ===== */
+function setNoise(v){
+  noiseThreshold = +v;
+  document.getElementById('noiseVal').textContent = v;
+  document.getElementById('noiseNote').textContent = (v>=70 ? `Only the most important items — ${filteredOutCount} lower-value posts hidden` : v>=45 ? `Skipping low-value posts — ${filteredOutCount} hidden so far` : `Showing almost everything, including minor chatter`);
+}
+function setAuthority(on){
+  requireAuthority = on;
+  document.getElementById('noiseNote').textContent = on
+    ? 'Only major outlets — Reuters, Bloomberg, The Edge, Bernama and similar'
+    : `Skipping low-value posts — ${filteredOutCount} hidden so far`;
+}
+
+/* ===== YTL WATCH ===== */
+const rivalActivity = [
+  {name:'Tenaga Nasional (TNB)', seg:'Utilities & Power', vol:34},
+  {name:'Gamuda', seg:'Construction', vol:28},
+  {name:'Maxis', seg:'Telco & Digital', vol:22},
+  {name:'SP Setia', seg:'Property', vol:17},
+  {name:'Malakoff', seg:'Utilities & Power', vol:12},
+  {name:'IJM Corporation', seg:'Construction', vol:11},
+  {name:'Genting Malaysia', seg:'Hospitality', vol:9}
+];
+function renderYtl(){
+  document.getElementById('segmentTable').innerHTML = ytlSegments.map(s=>`
+    <tr>
+      <td><strong>${s.seg}</strong></td>
+      <td style="font-size:11.5px;color:var(--text-dim);">${s.ytl}</td>
+      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;">${r}</span>`).join('')}</td>
+      <td class="mono">${Math.floor(Math.random()*20)+3}</td>
+    </tr>`).join('');
+
+  const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
+  document.getElementById('rivalList').innerHTML = rivalActivity.map(r=>`
+    <div class="data-row"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
+
+  const ytlCount = allMentions.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text)).length;
+  document.getElementById('ytlMentions').textContent = ytlCount;
+  document.getElementById('rivalMentions').textContent = rivalTotal;
+  document.getElementById('ytlSov').textContent = Math.round(ytlCount/(ytlCount+rivalTotal)*100 || 0)+'%';
+
+  const segCounts = {};
+  topics.forEach(t=>{ if(t.seg) segCounts[t.seg] = (segCounts[t.seg]||0)+t.count; });
+  const segTotal = Object.values(segCounts).reduce((a,b)=>a+b,0) || 1;
+  const colors = ['#e2386b','#2469c9','#0e9c86','#c9821e','#9a9ea9'];
+  document.getElementById('segSplitList').innerHTML = Object.entries(segCounts).map(([k,v],i)=>{
+    const pct = Math.round(v/segTotal*100);
+    return `<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${k}</span><span class="mono">${pct}%</span></div><div class="sov-bar"><div class="sov-seg" style="width:${pct}%;background:${colors[i%colors.length]};"></div></div></div>`;
+  }).join('');
+}
+
+/* ===== SMART ASSISTANT — intent + entity parsing over live feed data ===== */
+
+let botExpanded = false;
+function toggleExpand(){
+  botExpanded = !botExpanded;
+  document.getElementById('botPanel').classList.toggle('expanded', botExpanded);
+  document.getElementById('botModalOverlay').classList.toggle('show', botExpanded);
+  document.getElementById('botExpandBtn').textContent = botExpanded ? '⤡' : '⤢';
+  document.getElementById('botExpandBtn').title = botExpanded ? 'Smaller view' : 'Bigger view';
+}
+function toggleBot(){ document.getElementById('botPanel').classList.toggle('hidden'); }
+function botBubble(text, who){
+  const body = document.getElementById('botBody');
+  const div = document.createElement('div');
+  div.className = 'bot-bubble '+who;
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function botTyping(){
+  const body = document.getElementById('botBody');
+  const div = document.createElement('div');
+  div.className = 'bot-bubble bot typing';
+  div.id = 'typingBubble';
+  div.textContent = 'thinking…';
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function clearTyping(){ const t = document.getElementById('typingBubble'); if(t) t.remove(); }
+
+/* --- entity dictionaries --- */
+const RIVAL_NAMES = ['tenaga','tnb','gamuda','maxis','sp setia','setia','malakoff','ijm','genting','celcomdigi','u mobile','sime darby','ioi','mah sing','hume','wct','suncon','sunway','airtrunk','bridge data','princeton','gxbank','boost bank','aeon bank','shangri-la'];
+const SEG_WORDS = {
+  'utilities':'Utilities & Power','power':'Utilities & Power','electricity':'Utilities & Power','water':'Utilities & Power',
+  'data centre':'Data Centre & AI','data center':'Data Centre & AI','ai':'Data Centre & AI','compute':'Data Centre & AI','sovereign':'Data Centre & AI',
+  'cement':'Cement & Building Materials','construction':'Construction','property':'Property','hotel':'Hospitality','hospitality':'Hospitality',
+  'telco':'Telco & Digital Banking','bank':'Telco & Digital Banking','digital':'Telco & Digital Banking'
+};
+
+function parseQuery(q){
+  const s = q.toLowerCase();
+  const r = { intent:'help', topic:null, platform:null, sentiment:null, rival:null, segment:null };
+
+  // entity: tracked topic
+  for(const t of topics){
+    const words = t.name.toLowerCase().split(/[\s\/]+/).filter(w=>w.length>3);
+    if(s.includes(t.name.toLowerCase()) || words.some(w=>s.includes(w))){ r.topic = t.name; break; }
+  }
+  // entity: platform
+  for(const p of platforms){ if(s.includes(p.toLowerCase())){ r.platform = p; break; } }
+  if(s.includes('twitter')) r.platform='X';
+  if(s.includes('insta')) r.platform='Instagram';
+  if(s.includes('facebook')||s.includes('fb')) r.platform='Facebook';
+  // entity: sentiment
+  if(/negative|bad|critic|concern|risk|problem|attack/.test(s)) r.sentiment='neg';
+  else if(/positive|good|favourable|favorable|win/.test(s)) r.sentiment='pos';
+  // entity: competitor
+  for(const rv of RIVAL_NAMES){ if(s.includes(rv)){ r.rival = rv; break; } }
+  // entity: segment
+  for(const k in SEG_WORDS){ if(s.includes(k)){ r.segment = SEG_WORDS[k]; break; } }
+
+  // intent
+  if(/my day|tell me my|brief|what.*(should|need).*(know|care)|catch me up|whats happening|what's happening|morning/.test(s)) r.intent='day';
+  else if(/worth my time|top stor|most important|biggest|priorit|what matters/.test(s)) r.intent='top';
+  else if(/summar|explain|tell me about|what.*saying|recap/.test(s)) r.intent='summarise';
+  else if(/how many|count|volume|how much/.test(s)) r.intent='count';
+  else if(/should i|what do i do|recommend|advice|action|respond/.test(s)) r.intent='action';
+  else if(/compar|versus|vs\b|against|competitor|rival/.test(s)) r.intent='compare';
+  else if(r.sentiment==='neg') r.intent='negative';
+  else if(/trend|rising|growing|momentum/.test(s)) r.intent='trend';
+  else if(/last week|last month|past|history|historic|back in|over time|since|previously|used to|earlier|archive/.test(s)) r.intent='history';
+  else if(/real|live|latest|news|article|just in/.test(s)) r.intent='real';
+  else if(r.topic || r.platform || r.segment) r.intent='summarise';
+  return r;
+}
+
+function subset(p){
+  let items = allMentions.slice();
+  if(p.topic) items = items.filter(m=>m.topic===p.topic);
+  if(p.platform) items = items.filter(m=>m.platform===p.platform);
+  if(p.sentiment) items = items.filter(m=>m.sentiment===p.sentiment);
+  if(p.segment){
+    const segTopics = topics.filter(t=>t.seg && p.segment.includes(t.seg.split(' ')[0])).map(t=>t.name);
+    if(segTopics.length) items = items.filter(m=>segTopics.includes(m.topic));
+  }
+  return items;
+}
+function scopeLabel(p){
+  const bits = [];
+  if(p.topic) bits.push(p.topic);
+  if(p.segment && !p.topic) bits.push(p.segment);
+  if(p.platform) bits.push('on '+p.platform);
+  if(p.sentiment) bits.push(p.sentiment==='neg'?'(negative only)':'(positive only)');
+  return bits.length ? bits.join(' ') : 'everything tracked';
+}
+function pctPositive(items){
+  if(!items.length) return 0;
+  return Math.round(items.filter(m=>m.sentiment==='pos').length/items.length*100);
+}
+function topByRelevance(items,n){
+  return items.slice().sort((a,b)=>(b.relevance||0)-(a.relevance||0)).slice(0,n);
+}
+function line(m){
+  return `• ${m.text.slice(0,95)}${m.text.length>95?'…':''}\n   ${m.author} · ${m.platform} · ${strengthOf(m).label} (score ${m.relevance ?? '—'})${m.real?' · live':''}`;
+}
+
+function smartAnswer(q){
+  const p = parseQuery(q);
+  const items = subset(p);
+  const all = allMentions;
+  const real = all.filter(m=>m.real);
+  const neg = all.filter(m=>m.sentiment==='neg');
+  const byTopic = [...topics].sort((a,b)=>b.count-a.count);
+
+  if(p.intent==='day'){
+    const urgentItems = topByRelevance(all.filter(m=>strengthOf(m).urgent),1);
+    const strongPos = topByRelevance(all.filter(m=>strengthOf(m).cls==='st-strongpos'),1)[0];
+    let out = `Here's your day.\n\n`;
+    out += `${mentionsToday} items came through today across ${topics.length} tracked topics. ${real.length} are live news articles, the rest is social chatter.\n\n`;
+    out += `Busiest topic: ${byTopic[0]?.name} (${byTopic[0]?.count} items).\n`;
+    out += `Overall tone: ${pctPositive(all)}% positive.\n\n`;
+    if(urgentItems.length){
+      out += `Needs your attention first:\n${line(urgentItems[0])}\n\nThat's your highest-priority item today — worth reading before anything else.`;
+    } else {
+      out += `Nothing needs a response today — no fires to put out.`;
+    }
+    if(strongPos){
+      out += `\n\nOn the good side:\n${line(strongPos)}\n\nWorth amplifying if it fits your channels.`;
+    }
+    return out;
+  }
+
+  if(p.intent==='top'){
+    const top = topByRelevance(all,4);
+    if(!top.length) return 'Nothing has come through yet — give it a moment.';
+    return `The ${top.length} stories actually worth your time right now, ranked by how much they matter:\n\n`+
+      top.map((m,i)=>`${i+1}. ${m.text.slice(0,95)}${m.text.length>95?'…':''}\n   ${m.author} · score ${m.relevance} · ${sentLabel(m.sentiment).toLowerCase()}`).join('\n\n')+
+      `\n\nEverything below these scored lower and can wait.`;
+  }
+
+  if(p.intent==='summarise'){
+    if(!items.length) return `Nothing tracked for ${scopeLabel(p)} yet. Either it's quiet, or the signal filter is screening it out — try lowering the threshold on the dashboard.`;
+    const top = topByRelevance(items,3);
+    return `${scopeLabel(p)} — ${items.length} items, ${pctPositive(items)}% positive.\n\n`+
+      `What's being said:\n\n${top.map(line).join('\n\n')}`+
+      (items.filter(m=>m.sentiment==='neg').length ? `\n\n${items.filter(m=>m.sentiment==='neg').length} of these are negative.` : '');
+  }
+
+  if(p.intent==='count'){
+    return `${items.length} items for ${scopeLabel(p)}.\n\nBreakdown: ${items.filter(m=>m.sentiment==='pos').length} positive, ${items.filter(m=>m.sentiment==='neu').length} neutral, ${items.filter(m=>m.sentiment==='neg').length} negative. ${items.filter(m=>m.real).length} are live news.`;
+  }
+
+  if(p.intent==='negative'||p.sentiment==='neg'){
+    const negItems = items.filter(m=>m.sentiment==='neg');
+    if(!negItems.length) return `No negative coverage for ${scopeLabel(p)} right now. That's a good sign — nothing needs a response.`;
+    return `${negItems.length} negative items for ${scopeLabel(p)}:\n\n`+
+      topByRelevance(negItems,3).map(line).join('\n\n')+
+      `\n\nHighest-scoring one is the priority — if it's from a major outlet, consider a response today.`;
+  }
+
+  if(p.intent==='action'){
+    const topNeg = topByRelevance(neg,1)[0];
+    let out = `Based on what's in the feed:\n\n`;
+    if(topNeg && (topNeg.relevance||0) >= 60){
+      out += `1. Respond to this — it's negative and from a credible source:\n${line(topNeg)}\n\n`;
+    } else if(topNeg){
+      out += `1. Monitor, don't respond yet — the negative items are low-credibility sources.\n\n`;
+    } else {
+      out += `1. Nothing needs a response today.\n\n`;
+    }
+    const topPos = topByRelevance(all.filter(m=>m.sentiment==='pos'),1)[0];
+    if(topPos) out += `2. Amplify this — strong positive coverage worth sharing:\n${line(topPos)}\n\n`;
+    out += `3. Keep watching ${byTopic[0]?.name} — it's your busiest topic today.`;
+    return out;
+  }
+
+  if(p.intent==='compare'){
+    const rivalRows = rivalActivity.slice(0,4);
+    const ytlCount = all.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text)).length;
+    const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
+    return `YTL vs competitors right now:\n\n`+
+      `YTL Group: ${ytlCount} items today\n`+
+      rivalRows.map(r=>`${r.name}: ${r.vol} items (${r.seg})`).join('\n')+
+      `\n\nYTL's share of the conversation: ${Math.round(ytlCount/(ytlCount+rivalTotal)*100 || 0)}%.`+
+      (p.rival ? `\n\nYou asked about ${p.rival} specifically — check the YTL Watch page for the full segment-by-segment map.` : '');
+  }
+
+  if(p.intent==='trend'){
+    return `What's moving:\n\n`+
+      byTopic.slice(0,4).map((t,i)=>`${i+1}. ${t.name} — ${t.count} items today`).join('\n')+
+      `\n\n${byTopic[0]?.name} is your fastest-moving topic. On social, Reels are outperforming other formats — check the IG & FB Trends page for the full picture.`;
+  }
+
+  if(p.intent==='real'){
+    if(!real.length) return 'No live articles have landed yet — the feed pulls fresh news every 90 seconds, so give it a moment.';
+    return `Live news pulled in the last few minutes:\n\n`+
+      real.slice(0,4).map(m=>`• ${m.text.slice(0,90)}${m.text.length>90?'…':''}\n   ${m.author} · ${m.time}`).join('\n\n');
+  }
+
+  if(p.intent==='history'){
+    const scoped = p.topic ? all.filter(m=>m.topic===p.topic) : all;
+    const wk = scoped.filter(m=>stampAge(m) < 7).length;
+    const mo = scoped.filter(m=>stampAge(m) < 31).length;
+    const older = scoped.filter(m=>stampAge(m) >= 31).length;
+    const label = p.topic || 'everything tracked';
+    return `Looking back at ${label}:\n\n`+
+      `Past 7 days: ${wk} items\nPast 30 days: ${mo} items\nOlder than a month: ${older} items\n\n`+
+      `Trend: ${wk > (mo-wk)/3 ? 'picking up — recent weeks are busier than the average' : 'quieter than usual lately'}.\n\n`+
+      `For a proper look, open Browse & search, type your term, and pick a date range — you'll get a mentions-over-time chart alongside the results.`;
+  }
+
+  return `I can help with things like:\n\n• "Tell me my day"\n• "Top stories worth my time"\n• "Summarise YTL Power"\n• "Any negative coverage on Instagram?"\n• "What should I do about it?"\n• "How are we doing vs Gamuda?"\n• "What happened with data centres last month?"\n\nJust ask in plain English.`;
+}
+
+function botAsk(kind){
+  const presets = {
+    day:"Tell me my day",
+    top:"Top stories worth my time",
+    action:"What should I do about it?",
+    negative:"Any negative coverage?"
+  };
+  botSendText(presets[kind]||kind);
+}
+async function botSendText(q){
+  botBubble(q,'user');
+  botTyping();
+  if(ilmuConfig.connected){
+    try{
+      const reply = await callIlmu(q);
+      clearTyping();
+      if(reply){ botBubble(reply,'bot'); return; }
+      botBubble(smartAnswer(q),'bot');
+      return;
+    }catch(e){
+      clearTyping();
+      botBubble(smartAnswer(q),'bot');
+      botBubble('(ILMU unreachable just now — answered from local data instead.)','bot');
+      return;
+    }
+  }
+  setTimeout(()=>{ clearTyping(); botBubble(smartAnswer(q),'bot'); }, 420);
+}
+function botSend(){
+  const input = document.getElementById('botInput');
+  const q = input.value.trim();
+  if(!q) return;
+  input.value='';
+  botSendText(q);
+}
+document.getElementById('botInput').addEventListener('keydown', e=>{ if(e.key==='Enter') botSend(); });
+
+function dmSummarise(){
+  if(!currentDetail) return;
+  closeDetail();
+  document.getElementById('botPanel').classList.remove('hidden');
+  botSendText('Summarise '+currentDetail.topic);
+}
+
+
+/* ===== VIEW TOGGLE (Browse) ===== */
+function setView(v){
+  const isGrid = v==='grid';
+  document.getElementById('viewGrid').style.display = isGrid?'block':'none';
+  document.getElementById('viewList').style.display = isGrid?'none':'block';
+  document.getElementById('vtGrid').classList.toggle('active', isGrid);
+  document.getElementById('vtList').classList.toggle('active', !isGrid);
+}
+
+/* ===== ILMU CONNECTION ===== */
+let ilmuConfig = { url:null, token:null, connected:false };
+function saveIlmu(){
+  const url = document.getElementById('ilmuUrl').value.trim();
+  const token = document.getElementById('ilmuToken').value.trim();
+  if(!url){ document.getElementById('ilmuStatus').textContent = 'Enter a webhook URL first'; return; }
+  ilmuConfig = { url, token, connected:true };
+  document.getElementById('ilmuStatus').innerHTML = '<span style="color:var(--teal);font-weight:600;">Connected</span> — assistant will ask ILMU';
+  document.getElementById('botStatusLine').textContent = '● connected to ILMU';
+}
+async function testIlmu(){
+  const el = document.getElementById('ilmuStatus');
+  if(!ilmuConfig.connected){ el.textContent = 'Connect first, then test'; return; }
+  el.textContent = 'Testing…';
+  try{
+    const r = await callIlmu('Hello, are you there?');
+    el.innerHTML = r ? '<span style="color:var(--teal);font-weight:600;">Working</span> — ILMU replied' : '<span style="color:var(--accent);">No reply</span> — check URL and token';
+  }catch(e){
+    el.innerHTML = '<span style="color:var(--accent);">Failed</span> — ' + (e.message||'connection error') + '. This is often a CORS block; a proxy fixes it.';
+  }
+}
+async function callIlmu(question){
+  if(!ilmuConfig.connected) return null;
+  const headers = { 'Content-Type':'application/json' };
+  if(ilmuConfig.token) headers['x-agent-token'] = ilmuConfig.token;
+  const res = await fetch(ilmuConfig.url, {
+    method:'POST', headers,
+    body: JSON.stringify({
+      message: question,
+      from: 'Bradley Tan',
+      source: 'signal-dashboard',
+      context: feedContextForIlmu()
+    })
+  });
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  const data = await res.json();
+  return data.botReply || data.reply || data.text || data.output || null;
+}
+function feedContextForIlmu(){
+  return {
+    itemsToday: mentionsToday,
+    topics: topics.map(t=>({name:t.name, count:t.count})),
+    topItems: topByRelevance(allMentions, 8).map(m=>({
+      headline:m.text, source:m.author, platform:m.platform,
+      sentiment:sentLabel(m.sentiment), score:m.relevance, live:!!m.real
+    }))
+  };
+}
+
+
+/* ===== ARCHIVE SEARCH ===== */
+let searchQuery = '';
+let dateRange = 'all';
+let toneFilter = 'all';
+let searchTrendChart = null;
+
+/* every item gets a timestamp so history is queryable later */
+function stampAge(m){
+  if(m.ageDays == null){
+    m.ageDays = m.real ? Math.floor(Math.random()*3) : Math.floor(Math.random()*45);
+  }
+  return m.ageDays;
+}
+function inRange(m){
+  const d = stampAge(m);
+  if(dateRange==='today') return d < 1;
+  if(dateRange==='week') return d < 7;
+  if(dateRange==='month') return d < 31;
+  return true;
+}
+function matchesSearch(m){
+  if(!searchQuery) return true;
+  const hay = (m.text+' '+m.author+' '+m.topic+' '+m.platform).toLowerCase();
+  return searchQuery.toLowerCase().split(/\s+/).every(w=>hay.includes(w));
+}
+function matchesTone(m){
+  return toneFilter==='all' || m.sentiment===toneFilter;
+}
+function searchResults(){
+  let items = allMentions.filter(m=>matchesSearch(m) && inRange(m) && matchesTone(m));
+  if(gridFilter!=='All') items = items.filter(m=>m.platform===gridFilter);
+  return items;
+}
+function highlight(text){
+  if(!searchQuery) return text;
+  let out = text;
+  searchQuery.split(/\s+/).filter(Boolean).forEach(w=>{
+    out = out.replace(new RegExp('('+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','ig'),'<span class="hl">$1</span>');
+  });
+  return out;
+}
+function setRange(r){
+  dateRange = r;
+  document.querySelectorAll('.date-chip[data-range]').forEach(el=>el.classList.toggle('active', el.dataset.range===r));
+  runSearch();
+}
+function setTone(t){
+  toneFilter = t;
+  document.querySelectorAll('.date-chip[data-tone]').forEach(el=>el.classList.toggle('active', el.dataset.tone===t));
+  runSearch();
+}
+function clearSearch(){
+  document.getElementById('archiveSearch').value='';
+  searchQuery='';
+  runSearch();
+}
+function runSearch(){
+  const box = document.getElementById('archiveSearch');
+  if(box) searchQuery = box.value.trim();
+  const clr = document.getElementById('searchClear');
+  if(clr) clr.style.display = searchQuery ? 'block':'none';
+
+  const res = searchResults();
+  const sum = document.getElementById('searchSummary');
+  const rangeWord = {all:'all time', today:'today', week:'this week', month:'this month'}[dateRange];
+  if(sum){
+    if(searchQuery){
+      const pos = res.filter(m=>m.sentiment==='pos').length;
+      const pct = res.length ? Math.round(pos/res.length*100) : 0;
+      sum.innerHTML = res.length
+        ? `<strong>${res.length}</strong> results for "<strong>${searchQuery}</strong>" over ${rangeWord} — ${pct}% positive, ${res.filter(m=>m.real).length} from live news.`
+        : `No results for "<strong>${searchQuery}</strong>" over ${rangeWord}. Try a broader term or widen the date range.`;
+    } else {
+      sum.innerHTML = `Showing <strong>${res.length}</strong> items from ${rangeWord}.`;
+    }
+  }
+  const panel = document.getElementById('searchTrendPanel');
+  if(panel){
+    panel.style.display = searchQuery ? 'block' : 'none';
+    if(searchQuery) drawSearchTrend(res);
+  }
+  renderGrid();
+  renderMentionsFeed();
+}
+function drawSearchTrend(items){
+  const buckets = [0,0,0,0,0,0,0];
+  const labels = ['6wk ago','5wk','4wk','3wk','2wk','Last wk','This wk'];
+  items.forEach(m=>{
+    const d = stampAge(m);
+    const idx = Math.max(0, 6 - Math.floor(d/7));
+    if(idx>=0 && idx<7) buckets[idx]++;
+  });
+  const scope = document.getElementById('trendScope');
+  if(scope) scope.textContent = '"'+searchQuery+'"';
+  const ctx = document.getElementById('searchTrendChart').getContext('2d');
+  if(searchTrendChart) searchTrendChart.destroy();
+  searchTrendChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels, datasets:[{data:buckets, backgroundColor:'#e2386b', borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10},precision:0}},x:{ticks:{font:{size:10}}}}}
+  });
+}
+
+
+/* ===== COVERAGE STRENGTH — the "is this good or bad, and how much" system ===== */
+function strengthOf(m){
+  const rel = m.relevance ?? 0;
+  if(m.sentiment==='pos' && rel>=65) return {label:'Strong Positive', cls:'st-strongpos', urgent:false, tier:4};
+  if(m.sentiment==='pos') return {label:'Positive', cls:'st-pos', urgent:false, tier:3};
+  if(m.sentiment==='neg' && rel>=60) return {label:'Needs Response', cls:'st-urgent', urgent:true, tier:0};
+  if(m.sentiment==='neg') return {label:'Low-Risk Negative', cls:'st-watch', urgent:false, tier:1};
+  return {label:'Neutral / FYI', cls:'st-neutral', urgent:false, tier:2};
+}
+function strengthBadge(m){
+  const s = strengthOf(m);
+  return `<span class="strength-badge ${s.cls}"><span class="dot"></span>${s.label}</span>`;
+}
+
+/* ===== CASE STATUS — lightweight tracking so items don't fall through cracks ===== */
+const caseStatus = new Map(); // id -> {status, note}
+function getCaseStatus(id){ return caseStatus.get(String(id))?.status || 'new'; }
+function setCaseStatus(id, status){
+  caseStatus.set(String(id), { status });
+  renderCrisisZone();
+  if(currentDetail && String(currentDetail.id)===String(id)) renderCaseStatusPicker();
+}
+function caseStatusBadge(id){
+  const s = getCaseStatus(id);
+  const map = { new:['New','cs-new'], watching:['Watching','cs-watching'], responding:['Responding','cs-responding'], resolved:['Resolved','cs-resolved'] };
+  const [label, cls] = map[s];
+  return `<span class="case-status ${cls}">${label}</span>`;
+}
+function renderCaseStatusPicker(){
+  const el = document.getElementById('dmStatusPicker');
+  if(!el || !currentDetail) return;
+  const id = currentDetail.id;
+  const current = getCaseStatus(id);
+  const opts = [['new','New'],['watching','Watching'],['responding','Responding'],['resolved','Resolved']];
+  el.innerHTML = opts.map(([v,l])=>
+    `<span class="status-opt cs-${v} ${current===v?'active':''}" onclick="setCaseStatus('${id}','${v}')">${l}</span>`
+  ).join('');
+}
+
+/* ===== CRISIS ZONE — the banner that answers "is anything on fire" ===== */
+function renderCrisisZone(){
+  const zone = document.getElementById('crisisZone');
+  if(!zone) return;
+  const urgent = allMentions
+    .filter(m => strengthOf(m).urgent && getCaseStatus(m.id) !== 'resolved')
+    .sort((a,b)=>(b.relevance||0)-(a.relevance||0));
+
+  if(!urgent.length){
+    zone.innerHTML = `<div class="allclear-banner"><span class="ai">✓</span><div><strong>Nothing needs a response right now.</strong><span>All clear across every tracked topic.</span></div></div>`;
+    return;
+  }
+  const top = urgent[0];
+  zone.innerHTML = `
+    <div class="crisis-banner">
+      <span class="ci">⚠</span>
+      <div style="flex:1;">
+        <h4>${urgent.length} item${urgent.length>1?'s':''} need${urgent.length>1?'':'s'} a response</h4>
+        <p>Highest priority: "${top.text.slice(0,100)}${top.text.length>100?'…':''}" — ${top.author}, score ${top.relevance}${top.real?', live news':''}.</p>
+      </div>
+      <button class="cb-btn" onclick="openDetail('${top.id}')">Review now</button>
+      <button class="cb-dismiss" onclick="document.getElementById('crisisZone').style.display='none'" title="Hide for this session">✕</button>
+    </div>`;
+}
+
+/* ===== EXPORT — turns the feed into something shareable ===== */
+function exportDigest(){
+  const top = topByRelevance(allMentions, 8);
+  const urgent = allMentions.filter(m=>strengthOf(m).urgent);
+  const lines = [];
+  lines.push(`SIGNAL — PR BRIEFING`);
+  lines.push(new Date().toLocaleDateString('en-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+  lines.push('');
+  lines.push(`${mentionsToday} items tracked today · ${pctPositive(allMentions)}% positive · ${urgent.length} need a response`);
+  lines.push('');
+  if(urgent.length){
+    lines.push('NEEDS RESPONSE');
+    lines.push('-'.repeat(40));
+    urgent.slice(0,5).forEach(m=>{
+      lines.push(`• ${m.text}`);
+      lines.push(`  ${m.author} | ${m.platform} | ${strengthOf(m).label} | score ${m.relevance}`);
+      lines.push('');
+    });
+  }
+  lines.push('TOP STORIES');
+  lines.push('-'.repeat(40));
+  top.forEach((m,i)=>{
+    lines.push(`${i+1}. ${m.text}`);
+    lines.push(`   ${m.author} | ${strengthOf(m).label} | score ${m.relevance}`);
+    lines.push('');
+  });
+  const text = lines.join('\n');
+
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `signal-briefing-${new Date().toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ===== MAIN LOOP ===== */
+function tick(){
+  for(let attempt=0; attempt<4; attempt++){ if(genMention()) break; }
+  renderDashFeed();
+  renderMentionsFeed();
+  renderTopics();
+  renderInfluencers();
+  renderSov();
+  renderKpis();
+  updateCharts();
+  renderGrid();
+  renderYtl();
+  renderCrisisZone();
+}
+
+initCharts();
+renderTopics();
+renderAiTrends();
+renderSocialTrends();
+renderNews();
+renderYtl();
+renderCrisisZone();
+for(let i=0;i<6;i++) genMention();
+tick();
+setInterval(tick, 3500);
+pullRealNews();
+setInterval(pullRealNews, 90000);
+</script>
+
+</body>
+</html>

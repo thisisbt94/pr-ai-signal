@@ -1,0 +1,418 @@
+{
+  "name": "YTLCC — AI News & Social Trends Tracker (ILMU-scored)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "sched-1",
+      "name": "Daily 8AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// EDIT THIS LIST to add/remove tracked keywords\nconst keywords = [\n  { keyword: 'sovereign AI', tag: 'Sovereign AI' },\n  { keyword: 'AI regulation', tag: 'AI Regulation' },\n  { keyword: 'AI infrastructure', tag: 'AI Infrastructure' }\n];\nreturn keywords.map(k => ({ json: k }));"
+      },
+      "id": "code-keywords",
+      "name": "Keyword List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1180,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://news.google.com/rss/search?q={{ encodeURIComponent($json.keyword) }}&hl=en-MY&gl=MY&ceid=MY:en",
+        "options": {}
+      },
+      "id": "http-googlenews",
+      "name": "Google News RSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "xmlToJson",
+        "dataPropertyName": "data",
+        "options": {}
+      },
+      "id": "xml-parse",
+      "name": "Parse RSS XML",
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -740,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const keyword = $('Keyword List').item.json.keyword;\nconst tag = $('Keyword List').item.json.tag;\nconst channel = $input.first().json.rss?.channel;\nif (!channel) return [];\nlet items = channel.item || [];\nif (!Array.isArray(items)) items = [items];\nreturn items.slice(0, 8).map(it => ({\n  json: {\n    keyword,\n    tag,\n    type: 'News',\n    platform: 'Google News',\n    headline: it.title,\n    url: it.link,\n    source: it.source?._text || it.source || '',\n    datePublished: it.pubDate ? new Date(it.pubDate).toISOString().slice(0,10) : '',\n    engagement: null,\n    rawSnippet: it.description || it.title\n  }\n}));"
+      },
+      "id": "code-extract-news",
+      "name": "Extract News Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.reddit.com/search.json?q={{ encodeURIComponent($json.keyword) }}&sort=new&limit=8&t=day",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "ytlcc-pr-tracker/1.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-reddit",
+      "name": "Reddit Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const keyword = $('Keyword List').item.json.keyword;\nconst tag = $('Keyword List').item.json.tag;\nconst children = $input.first().json.data?.children || [];\nreturn children.map(c => {\n  const d = c.data;\n  return {\n    json: {\n      keyword,\n      tag,\n      type: 'Social Post',\n      platform: 'Reddit',\n      headline: d.title,\n      url: 'https://reddit.com' + d.permalink,\n      source: 'r/' + d.subreddit,\n      datePublished: new Date(d.created_utc * 1000).toISOString().slice(0,10),\n      engagement: (d.ups || 0) + (d.num_comments || 0),\n      rawSnippet: d.selftext ? d.selftext.slice(0, 400) : d.title\n    }\n  };\n});"
+      },
+      "id": "code-extract-reddit",
+      "name": "Extract Reddit Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -740,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=8&q={{ encodeURIComponent($json.keyword) }}&key={{ $credentials.youtubeApiKey }}",
+        "options": {}
+      },
+      "id": "http-youtube",
+      "name": "YouTube Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        520
+      ],
+      "notes": "Requires a free YouTube Data API v3 key from Google Cloud Console. Replace the {{ $credentials.youtubeApiKey }} expression with your key or wire up an n8n credential."
+    },
+    {
+      "parameters": {
+        "jsCode": "const keyword = $('Keyword List').item.json.keyword;\nconst tag = $('Keyword List').item.json.tag;\nconst items = $input.first().json.items || [];\nreturn items.map(it => ({\n  json: {\n    keyword,\n    tag,\n    type: 'Social Post',\n    platform: 'YouTube',\n    headline: it.snippet.title,\n    url: 'https://www.youtube.com/watch?v=' + it.id.videoId,\n    source: it.snippet.channelTitle,\n    datePublished: (it.snippet.publishedAt || '').slice(0,10),\n    engagement: null,\n    rawSnippet: it.snippet.description\n  }\n}));"
+      },
+      "id": "code-extract-youtube",
+      "name": "Extract YouTube Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -740,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "merge-1",
+      "name": "Merge News + Reddit",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "merge-2",
+      "name": "Merge + YouTube",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -140,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ilmu.ai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'ilmu-mini-v3.3', temperature: 0.2, max_tokens: 300, messages: [ { role: 'user', content: `You score items for a PR team tracking \"${$json.keyword}\" news/social trends. Given this item, return ONLY raw JSON (no markdown fences) with keys: pr_score (integer 0-100, PR relevance/impact for a corporate comms team), sentiment (\"Positive\"|\"Neutral\"|\"Negative\"), summary (1-2 plain sentences).\\n\\nHeadline: ${$json.headline}\\nSource: ${$json.source}\\nSnippet: ${$json.rawSnippet}` } ] }) }}",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth"
+      },
+      "id": "http-ilmu-score",
+      "name": "ILMU: Score Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        320
+      ],
+      "notes": "Uses your existing ILMU bearer credential instead of a separate Anthropic key. Model confirmed working: ilmu-mini-v3.3. If your ILMU deployment uses a different model string for this workload, swap it here — check the model your live ILMU workflow (ZnftOUfHQCXKkiRe) actually calls if this returns a 'model not found' error.",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "CRRgScOmqPWvpnwG",
+          "name": "ILMU"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $('Merge + YouTube').item.json;\nlet parsed = { pr_score: null, sentiment: 'Neutral', summary: item.rawSnippet?.slice(0,200) || '' };\ntry {\n  const text = $json.choices?.[0]?.message?.content\n    || $json.content?.[0]?.text\n    || '{}';\n  const clean = text.replace(/```json|```/g, '').trim();\n  parsed = JSON.parse(clean);\n} catch (e) { /* fall back to defaults above */ }\nreturn [{\n  json: {\n    ...item,\n    prScore: parsed.pr_score,\n    sentiment: parsed.sentiment,\n    summary: parsed.summary\n  }\n}];"
+      },
+      "id": "code-parse-claude",
+      "name": "Parse ILMU Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.notionApi.token }}"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ parent: { data_source_id: 'b45e8d7e-2b7b-4660-8ab4-09aec625da34' }, properties: { 'Headline / Topic': { title: [ { text: { content: $json.headline || 'Untitled' } } ] }, 'Keyword Tracked': { multi_select: [ { name: $json.tag } ] }, 'Type': { select: { name: $json.type } }, 'Platform': { select: { name: $json.platform } }, 'Source / Author': { rich_text: [ { text: { content: String($json.source || '') } } ] }, 'Date Published': $json.datePublished ? { date: { start: $json.datePublished } } : null, 'Summary': { rich_text: [ { text: { content: String($json.summary || '').slice(0,1900) } } ] }, 'Sentiment': $json.sentiment ? { select: { name: $json.sentiment } } : null, 'PR AI Score': $json.prScore != null ? { number: $json.prScore } : null, 'Engagement': $json.engagement != null ? { number: $json.engagement } : null, 'userDefined:URL': { url: $json.url }, 'Status': { select: { name: 'New' } } } }) }}",
+        "options": {}
+      },
+      "id": "http-notion-create",
+      "name": "Create Notion Row",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        320
+      ],
+      "notes": "Uses direct Notion API call so it always targets the exact data source. Requires a Notion internal integration token with access to the '🌐 AI News & Social Trends Tracker' database shared with it."
+    }
+  ],
+  "connections": {
+    "Daily 8AM": {
+      "main": [
+        [
+          {
+            "node": "Keyword List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keyword List": {
+      "main": [
+        [
+          {
+            "node": "Google News RSS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reddit Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "YouTube Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google News RSS": {
+      "main": [
+        [
+          {
+            "node": "Parse RSS XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse RSS XML": {
+      "main": [
+        [
+          {
+            "node": "Extract News Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reddit Search": {
+      "main": [
+        [
+          {
+            "node": "Extract Reddit Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Search": {
+      "main": [
+        [
+          {
+            "node": "Extract YouTube Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract News Items": {
+      "main": [
+        [
+          {
+            "node": "Merge News + Reddit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Reddit Items": {
+      "main": [
+        [
+          {
+            "node": "Merge News + Reddit",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge News + Reddit": {
+      "main": [
+        [
+          {
+            "node": "Merge + YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract YouTube Items": {
+      "main": [
+        [
+          {
+            "node": "Merge + YouTube",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge + YouTube": {
+      "main": [
+        [
+          {
+            "node": "ILMU: Score Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ILMU: Score Item": {
+      "main": [
+        [
+          {
+            "node": "Parse ILMU Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse ILMU Output": {
+      "main": [
+        [
+          {
+            "node": "Create Notion Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
