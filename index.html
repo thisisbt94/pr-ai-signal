@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --bg:#f5f6f9; --surface:#ffffff; --surface-2:#f0f2f6; --surface-3:#e7e9f0;
@@ -314,7 +315,10 @@
 
       <div class="page-title">
         <div><h2>Today</h2><p>What people are saying about YTL and your industry, updated continuously.</p></div>
-        <button class="export-btn" onclick="exportDigest()">⭳ Export today's briefing</button>
+        <div style="display:flex;gap:8px;">
+          <button class="export-btn" onclick="exportDigestExcel()">⭳ Export to Excel</button>
+          <button class="export-btn" onclick="exportDigest()" title="Plain text version">⭳ Text</button>
+        </div>
       </div>
 
       <div id="crisisZone"></div>
@@ -1780,6 +1784,66 @@ function renderCrisisZone(){
 }
 
 /* ===== EXPORT — turns the feed into something shareable ===== */
+function exportDigestExcel(){
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-MY',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const urgent = allMentions.filter(m=>strengthOf(m).urgent);
+  const sorted = topByRelevance(allMentions, allMentions.length);
+
+  // Sheet 1 — Summary
+  const summaryRows = [
+    { Metric: 'Date', Value: dateStr },
+    { Metric: 'Items tracked today', Value: mentionsToday },
+    { Metric: 'Overall positive %', Value: pctPositive(allMentions) + '%' },
+    { Metric: 'Needs response', Value: urgent.length },
+    { Metric: 'Live news articles', Value: allMentions.filter(m=>m.real).length },
+  ];
+
+  // Sheet 2 — All items, ranked
+  const itemRows = sorted.map((m,i)=>({
+    'Rank': i+1,
+    'Strength': strengthOf(m).label,
+    'Score': m.relevance ?? '',
+    'Headline': m.text,
+    'Source': m.author,
+    'Platform': m.platform,
+    'Topic': m.topic,
+    'Sentiment': sentLabel(m.sentiment),
+    'Case Status': getCaseStatus(m.id).charAt(0).toUpperCase() + getCaseStatus(m.id).slice(1),
+    'Type': m.real ? 'Live news' : 'Demo',
+    'Time': m.time || '',
+    'Link': m.real && m.url ? m.url : ''
+  }));
+
+  // Sheet 3 — Needs Response only, for quick action
+  const urgentRows = topByRelevance(urgent, urgent.length).map((m,i)=>({
+    'Priority': i+1,
+    'Headline': m.text,
+    'Source': m.author,
+    'Score': m.relevance ?? '',
+    'Case Status': getCaseStatus(m.id).charAt(0).toUpperCase() + getCaseStatus(m.id).slice(1),
+    'Link': m.real && m.url ? m.url : ''
+  }));
+
+  const wb = XLSX.utils.book_new();
+  const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+  wsSummary['!cols'] = [{wch:22},{wch:30}];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  if(urgentRows.length){
+    const wsUrgent = XLSX.utils.json_to_sheet(urgentRows);
+    wsUrgent['!cols'] = [{wch:9},{wch:60},{wch:20},{wch:8},{wch:14},{wch:40}];
+    XLSX.utils.book_append_sheet(wb, wsUrgent, 'Needs Response');
+  }
+
+  const wsItems = XLSX.utils.json_to_sheet(itemRows);
+  wsItems['!cols'] = [{wch:6},{wch:16},{wch:7},{wch:60},{wch:20},{wch:10},{wch:16},{wch:10},{wch:12},{wch:10},{wch:10},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, wsItems, 'All Items');
+
+  XLSX.writeFile(wb, `signal-briefing-${now.toISOString().slice(0,10)}.xlsx`);
+}
+
+
 function exportDigest(){
   const top = topByRelevance(allMentions, 8);
   const urgent = allMentions.filter(m=>strengthOf(m).urgent);
