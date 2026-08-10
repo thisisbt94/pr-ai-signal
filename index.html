@@ -524,7 +524,7 @@
       <div class="section-head">Live data sources</div>
       <div class="panel" style="margin-bottom:20px;">
         <p style="font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;">
-          News, Reddit, and Hacker News are already live — no setup needed. YouTube needs a free API key
+          News (global + Tier 1 Malaysian outlets: The Star, NST, Bernama, The Edge, Malay Mail, and more) and Reddit are already live — no setup needed. YouTube needs a free API key
           (from <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--accent);">Google Cloud Console</a>, no cost) if you want video coverage too.
           Instagram/Facebook/X have no free path — see the DEMO toggle below for what that would look like.
         </p>
@@ -822,7 +822,7 @@ function passesFilter(item){
 
 let filteredOutCount = 0;
 
-/* ===== REAL NEWS INGESTION — GDELT, Hacker News, Reddit — all free, keyless, CORS-open from a browser ===== */
+/* ===== REAL NEWS INGESTION — GDELT (global + Tier 1 Malaysian outlets), Reddit — all free, keyless, CORS-open from a browser ===== */
 const seenUrls = new Set();
 
 // Very small keyword-based sentiment pass so real items aren't stuck at "Neutral" forever.
@@ -856,21 +856,28 @@ async function fetchGdelt(topic){
   }catch(e){ return []; }
 }
 
-async function fetchHN(topic){
+// Tier 1 Malaysian outlets — the outlets that actually matter for YTL coverage,
+// queried via GDELT's domain-restriction operator so this stays keyless and CORS-open.
+const TIER1_MY_DOMAINS = ['thestar.com.my','nst.com.my','bernama.com','theedgemalaysia.com','malaymail.com','thesundaily.my','astroawani.com','freemalaysiatoday.com'];
+
+async function fetchTier1MY(topic){
   try{
-    const url = `https://hn.algolia.com/api/v1/search_by_date?query=${encodeURIComponent(topic)}&tags=story&hitsPerPage=5`;
+    const domainClause = TIER1_MY_DOMAINS.map(d=>`domainis:${d}`).join(' OR ');
+    const q = encodeURIComponent(`(${domainClause}) "${topic}"`);
+    const url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}&mode=artlist&format=json&maxrecords=10&sort=datedesc&timespan=72h`;
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
-    return (data.hits||[]).filter(h=>h.title).map(h=>({
-      author: 'Hacker News · '+(h.author||''),
-      text: h.title,
-      url: h.url || ('https://news.ycombinator.com/item?id='+h.objectID),
+    return (data.articles||[]).map(a=>({
+      author: a.domain || 'news',
+      text: a.title,
+      url: a.url,
       platform: 'News',
       topic, real: true,
-      sentiment: quickSentiment(h.title||''),
-      engagement: (h.points||0)+' pts · '+(h.num_comments||0)+' cmts',
-      time: h.created_at ? new Date(h.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'today'
+      tier1: true,
+      sentiment: quickSentiment(a.title||''),
+      engagement: '—',
+      time: (a.seendate||'').replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
     }));
   }catch(e){ return []; }
 }
@@ -927,8 +934,8 @@ async function pullRealNews(){
   const targets = topics.map(t=>t.name); // every tracked topic, not just the first few
   let added = 0;
   for(const t of targets){
-    const [g,h,r,y] = await Promise.all([fetchGdelt(t), fetchHN(t), fetchReddit(t), fetchYouTube(t)]);
-    for(const item of [...g,...h,...r,...y]){
+    const [g,my,r,y] = await Promise.all([fetchGdelt(t), fetchTier1MY(t), fetchReddit(t), fetchYouTube(t)]);
+    for(const item of [...g,...my,...r,...y]){
       if(seenUrls.has(item.url)) continue;
       seenUrls.add(item.url);
       if(!passesFilter(item)){ filteredOutCount++; continue; }
@@ -948,6 +955,7 @@ function sentLabel(s){ return s==='pos'?'Positive':s==='neg'?'Negative':'Neutral
 
 function mentionHTML(m){
   const badge = m.real ? '<span class="m-tag tag-real">LIVE</span>' : '<span class="m-tag tag-sim">DEMO</span>';
+  const tier1Badge = m.tier1 ? '<span class="m-tag" style="background:#fde68a;color:#4a3208;">MY TIER 1</span>' : '';
   const body = m.real && m.url
     ? `<a href="${m.url}" target="_blank" rel="noopener" style="text-decoration:underline;text-decoration-color:var(--line);">${m.text}</a>`
     : m.text;
@@ -960,6 +968,7 @@ function mentionHTML(m){
         ${strengthBadge(m)}
         ${caseStatusBadge(m.id)}
         ${badge}
+        ${tier1Badge}
         <span class="m-tag tag-topic">${m.topic}</span>
       </div>
     </div>
