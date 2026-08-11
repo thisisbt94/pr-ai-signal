@@ -210,7 +210,8 @@
   .allclear-banner strong{font-size:13px;}
   .allclear-banner span{font-size:12px;color:var(--text-dim);display:block;margin-top:2px;}
 
-  .case-status{display:inline-flex;gap:5px;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;}
+  .case-status{display:inline-flex;gap:5px;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;border:1px solid transparent;}
+  .case-status:hover{border-color:currentColor;}
   .cs-new{background:var(--surface-3);color:var(--text-dim);}
   .cs-watching{background:var(--blue-dim);color:var(--blue);}
   .cs-responding{background:var(--amber-dim);color:var(--amber);}
@@ -501,6 +502,8 @@
   .wq-mark.amplify{background:var(--teal-dim);color:var(--teal);}
   .wq-title{font-size:12.5px;font-weight:700;}
   .wq-copy{font-size:11.5px;color:var(--text-dim);margin-top:2px;line-height:1.5;}
+  .wq-quick{flex-shrink:0;background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--teal);cursor:pointer;align-self:center;}
+  .wq-quick:hover{background:var(--teal-dim);border-color:var(--teal);}
 
   .wt-add-row{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);}
   .wt-add-row input{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;}
@@ -2649,17 +2652,35 @@ function strengthBadge(m){
 
 /* ===== CASE STATUS — lightweight tracking so items don't fall through cracks ===== */
 const caseStatus = new Map(); // id -> {status, note}
+const CASE_CYCLE = ['new','watching','responding','resolved'];
 function getCaseStatus(id){ return caseStatus.get(String(id))?.status || 'new'; }
 function setCaseStatus(id, status){
   caseStatus.set(String(id), { status });
+  // refresh every place a status badge appears, instantly — no waiting for the next tick
   renderCrisisZone();
+  renderWorkQueue();
+  renderDashFeed();
+  renderMentionsFeed();
+  renderGrid();
+  renderWall();
   if(currentDetail && String(currentDetail.id)===String(id)) renderCaseStatusPicker();
+}
+function cycleCaseStatus(id, ev){
+  if(ev) ev.stopPropagation(); // so clicking the badge never also opens the detail modal underneath it
+  const cur = getCaseStatus(id);
+  const next = CASE_CYCLE[(CASE_CYCLE.indexOf(cur) + 1) % CASE_CYCLE.length];
+  setCaseStatus(id, next);
 }
 function caseStatusBadge(id){
   const s = getCaseStatus(id);
   const map = { new:['New','cs-new'], watching:['Watching','cs-watching'], responding:['Responding','cs-responding'], resolved:['Resolved','cs-resolved'] };
   const [label, cls] = map[s];
-  return `<span class="case-status ${cls}">${label}</span>`;
+  return `<span class="case-status ${cls}" onclick="cycleCaseStatus('${id}', event)" title="Click to move to the next status">${label}</span>`;
+}
+function setCaseStatusFromModal(id, status){
+  setCaseStatus(id, status);
+  // Resolved means you're done with it — close automatically instead of making you click out
+  if(status === 'resolved') closeDetail();
 }
 function renderCaseStatusPicker(){
   const el = document.getElementById('dmStatusPicker');
@@ -2668,9 +2689,10 @@ function renderCaseStatusPicker(){
   const current = getCaseStatus(id);
   const opts = [['new','New'],['watching','Watching'],['responding','Responding'],['resolved','Resolved']];
   el.innerHTML = opts.map(([v,l])=>
-    `<span class="status-opt cs-${v} ${current===v?'active':''}" onclick="setCaseStatus('${id}','${v}')">${l}</span>`
+    `<span class="status-opt cs-${v} ${current===v?'active':''}" onclick="setCaseStatusFromModal('${id}','${v}')">${l}</span>`
   ).join('');
 }
+
 
 
 /* ===== SOURCE HEALTH — honest status per source, no invented scores ===== */
@@ -2705,20 +2727,22 @@ function renderWorkQueue(){
 
   if(urgent.length){
     const top = topByRelevance(urgent, 1)[0];
-    rows.push(['respond', '!', 'Respond', `${top.author}: "${top.text.slice(0,80)}${top.text.length>80?'…':''}"`, `openDetail('${top.id}')`]);
+    rows.push(['respond', '!', 'Respond', `${top.author}: "${top.text.slice(0,80)}${top.text.length>80?'…':''}"`, `openDetail('${top.id}')`,
+      `<span class="wq-quick" onclick="event.stopPropagation();setCaseStatus('${top.id}','resolved')" title="Mark handled without opening it">✓ Resolve</span>`]);
   }
   if(positive.length){
     const p = positive[0];
-    rows.push(['amplify', '↗', 'Worth amplifying', `${p.author}: "${p.text.slice(0,80)}${p.text.length>80?'…':''}"`, `openDetail('${p.id}')`]);
+    rows.push(['amplify', '↗', 'Worth amplifying', `${p.author}: "${p.text.slice(0,80)}${p.text.length>80?'…':''}"`, `openDetail('${p.id}')`, '']);
   }
   if(!urgent.length && !positive.length){
-    rows.push(['watch', '◌', 'Nothing urgent right now', 'Check back as new coverage comes in, or browse everything collected so far.', "clearBrowseContext(true);navigateTo('grid');runSearch();"]);
+    rows.push(['watch', '◌', 'Nothing urgent right now', 'Check back as new coverage comes in, or browse everything collected so far.', "clearBrowseContext(true);navigateTo('grid');runSearch();", '']);
   }
 
-  el.innerHTML = rows.map(([cls, icon, title, copy, action]) => `
+  el.innerHTML = rows.map(([cls, icon, title, copy, action, quick]) => `
     <div class="wq-row" onclick="${action}">
       <span class="wq-mark ${cls}">${icon}</span>
-      <div><div class="wq-title">${title}</div><div class="wq-copy">${copy}</div></div>
+      <div style="flex:1;"><div class="wq-title">${title}</div><div class="wq-copy">${copy}</div></div>
+      ${quick||''}
     </div>`).join('');
 }
 
@@ -2743,6 +2767,7 @@ function renderCrisisZone(){
         <p>Highest priority: "${top.text.slice(0,100)}${top.text.length>100?'…':''}" — ${top.author}, score ${top.relevance}${top.real?', live news':''}.</p>
       </div>
       <button class="cb-btn" onclick="openDetail('${top.id}')">Review now</button>
+      <button class="cb-btn" style="background:rgba(255,255,255,.18);color:#fff;" onclick="setCaseStatus('${top.id}','resolved')" title="Mark as handled without opening it">✓ Mark resolved</button>
       <button class="cb-btn" style="background:rgba(255,255,255,.18);color:#fff;" onclick="goToBrowseWithQuery('${top.topic.replace(/'/g,"")}', '${top.topic.replace(/'/g,"")}', 'Drilled in from the urgent-items banner.', 'dash')">See all on this</button>
       <button class="cb-dismiss" onclick="document.getElementById('crisisZone').style.display='none'" title="Hide for this session">✕</button>
     </div>`;
@@ -2918,7 +2943,7 @@ function wallItemHTML(m){
   return `<div class="wall-item" onclick="openDetail('${m.id}')">
     <div class="wi-top"><span class="wi-src">${String(m.author).slice(0,26)}</span><span class="wi-time">${m.time||''}</span></div>
     <div class="wi-text">${(m.text||'').slice(0,120)}${(m.text||'').length>120?'…':''}</div>
-    <div class="wi-tags">${strengthBadge(m)}${tier}${openLink}</div>
+    <div class="wi-tags">${strengthBadge(m)}${caseStatusBadge(m.id)}${tier}${openLink}</div>
   </div>`;
 }
 
