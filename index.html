@@ -414,7 +414,65 @@
   .avoid-card:last-child{margin-bottom:0;}
   .avoid-card strong{display:block;margin-bottom:3px;}
 
-  /* ===== REAL TRENDING POSTS ===== */
+  
+/* ===== SUGGESTED POSTS — turns Content Ideas into a ready-to-use guide, not a data dump ===== */
+const SUGGEST_FORMATS = ['Reels / short video', 'Carousel', 'Single image + caption'];
+
+function captionFor(m, idx){
+  const outlet = String(m.author||'').replace(/^www\./,'');
+  const templates = [
+    `📰 ${outlet} is reporting: "${(m.text||'').slice(0,110)}${(m.text||'').length>110?'…':''}"\n\nHere's why it matters for ${m.topic}: [add your one-line take].\n\n`,
+    `Big moment for ${m.topic} — ${outlet} covering it now.\n\n"${(m.text||'').slice(0,100)}${(m.text||'').length>100?'…':''}"\n\nWhat this means for us: [add context].\n\n`,
+    `Worth a share: ${outlet} on ${m.topic}.\n\n${(m.text||'').slice(0,110)}${(m.text||'').length>110?'…':''}\n\n[Add your team's perspective here.]\n\n`
+  ];
+  return templates[idx % templates.length];
+}
+
+function renderSuggestedPosts(){
+  const el = document.getElementById('suggestedPosts');
+  if(!el) return;
+  const positives = allMentions.filter(m => m.real && m.sentiment === 'pos');
+  const picks = topByRelevance(positives, 3);
+
+  if(!picks.length){
+    el.innerHTML = `<div style="font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:8px 0;">No strongly positive real coverage yet to build a suggestion from. Once something lands, a ready-to-post suggestion appears here automatically.</div>`;
+    return;
+  }
+
+  const kws = extractKeywords().slice(0,6).map(([w])=>toHashtag(w));
+  const evergreen = ['#YTL', '#MalaysiaBusiness'];
+
+  el.innerHTML = picks.map((m, i) => {
+    const tags = [...new Set([toHashtag(m.topic.split(' ')[0]), ...kws.slice(0,2), ...evergreen])].slice(0,5);
+    const caption = captionFor(m, i);
+    const captionId = 'suggestCaption' + i;
+    return `<div class="suggest-card">
+      <div class="suggest-head">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span class="suggest-num">${i+1}</span>
+          <strong style="font-size:12.5px;">${m.topic}</strong>
+        </div>
+        <span class="suggest-format">${SUGGEST_FORMATS[i % SUGGEST_FORMATS.length]}</span>
+      </div>
+      <div class="suggest-caption" id="${captionId}">${caption.replace(/\n/g,'<br>')}</div>
+      <div class="suggest-tags">${tags.map(t=>`<span class="hashtag" style="cursor:default;">${t}</span>`).join('')}</div>
+      <div class="suggest-actions">
+        <button class="suggest-btn primary" onclick="copySuggestion('${captionId}', ${JSON.stringify(tags.join(' '))})">Copy caption + tags</button>
+        <button class="suggest-btn" onclick="openDetail('${m.id}')">See the source story</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copySuggestion(captionId, tags){
+  const el = document.getElementById(captionId);
+  const text = (el?.innerText || '') + '\n\n' + tags;
+  navigator.clipboard?.writeText(text);
+  const btn = event?.target;
+  if(btn){ const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent = orig, 1000); }
+}
+
+/* ===== REAL TRENDING POSTS ===== */
   .trend-post{display:flex;gap:14px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;align-items:flex-start;}
   .trend-post:last-child{border-bottom:none;}
   .trend-post:hover{background:var(--surface-2);}
@@ -501,6 +559,25 @@
   .wq-mark.amplify{background:var(--teal-dim);color:var(--teal);}
   .wq-title{font-size:12.5px;font-weight:700;}
   .wq-copy{font-size:11.5px;color:var(--text-dim);margin-top:2px;line-height:1.5;}
+
+  .wt-add-row{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);}
+  .wt-add-row input{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;}
+  .wt-add-row input:focus{outline:none;border-color:var(--accent);}
+  .wt-add-row button{flex-shrink:0;padding:7px 12px;font-size:11.5px;}
+  .wi-open{font-size:10.5px;color:var(--accent);font-weight:700;text-decoration:none;flex-shrink:0;padding:2px 4px;}
+  .wi-open:hover{text-decoration:underline;}
+
+  .suggest-card{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+  .suggest-card:last-child{margin-bottom:0;}
+  .suggest-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .suggest-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .suggest-format{font-size:10px;text-transform:uppercase;letter-spacing:.04em;background:var(--surface-3);color:var(--text-dim);padding:3px 9px;border-radius:20px;font-weight:700;flex-shrink:0;}
+  .suggest-caption{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:12.5px;line-height:1.6;margin-bottom:10px;color:var(--text);}
+  .suggest-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .suggest-actions{display:flex;gap:8px;}
+  .suggest-btn{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 13px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--text);}
+  .suggest-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .suggest-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
   .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 
   .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
@@ -603,7 +680,7 @@
       <span class="brand-home">home</span>
     </div>
     <div class="nav-group">Live data</div>
-    <div class="navitem active" data-page="wall"><span class="ic">▦</span>The Wall<span class="nav-count" id="navCountWall"></span></div>
+    <div class="navitem active" data-page="wall"><span class="ic">▦</span>Terminal<span class="nav-count" id="navCountWall"></span></div>
     <div class="navitem" data-page="dash"><span class="ic">◆</span>Today<span class="nav-count" id="navCountToday"></span></div>
     <div class="navitem" data-page="grid"><span class="ic">▤</span>Browse &amp; Search<span class="nav-count" id="navCountBrowse"></span></div>
     <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitors</div>
@@ -635,8 +712,8 @@
     <div class="page active" id="page-wall">
       <div class="page-title">
         <div>
-          <h2>The Wall</h2>
-          <p>Everything at once — no clicking around. Each box below answers one question.</p>
+          <h2>Terminal</h2>
+          <p>Your command hub — see everything, manage what you track, and jump anywhere from one screen.</p>
         </div>
         <div style="display:flex;gap:8px;">
           <button class="export-btn" onclick="exportDigestExcel()">⭳ Export to Excel</button>
@@ -653,7 +730,7 @@
           <div class="wall-panel">
             <div class="wp-head">
               <h4>What just came in</h4>
-              <span class="wp-sub">Newest first · updates every minute</span>
+              <span class="wp-sub">Newest first · updates every minute · click any headline to open the source</span>
             </div>
             <div class="wp-body" id="wallFeed"></div>
             <div class="wp-foot" onclick="clearBrowseContext(true);navigateTo('grid');runSearch();">See everything →</div>
@@ -683,10 +760,14 @@
           <div class="wall-panel">
             <div class="wp-head">
               <h4>What we're tracking</h4>
-              <span class="wp-sub">Click any topic to see its coverage</span>
+              <span class="wp-sub">Add or remove right here · click a topic to see its trends</span>
+            </div>
+            <div class="wt-add-row">
+              <input type="text" id="terminalTopicInput" placeholder="Add a topic…">
+              <button class="btn-solid" id="terminalAddBtn" onclick="addTopicFromTerminal()">Add</button>
             </div>
             <div class="wp-body" id="wallTopics"></div>
-            <div class="wp-foot" onclick="navigateTo('settings')">Add or change topics →</div>
+            <div class="wp-foot" onclick="navigateTo('trends')">See topic trends →</div>
           </div>
 
           <div class="wall-panel">
@@ -884,15 +965,20 @@
       <div class="page-title">
         <div>
           <h2>Content Ideas</h2>
-          <p>What to post about this week — worked out from the news actually coming in, not guesswork.</p>
+          <p>Your posting guide for this week — pick a suggestion below, tweak it, post it.</p>
         </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:18px;">
+        <h3>Today's suggested posts <span>Ready to use, built from real coverage</span></h3>
+        <div id="suggestedPosts"></div>
       </div>
 
       <div class="context-bar">
         <span class="cb-icon">✎</span>
         <div class="cb-body">
-          <h5>How these are worked out</h5>
-          <p>Everything below comes from the real headlines in your feed right now. Words that keep appearing become keywords, positive stories become post angles. This updates as the news does — nothing here is a fixed list.</p>
+          <h5>Where the suggestions above come from</h5>
+          <p>Everything below is the raw material behind those suggestions — the words that keep appearing, the hashtags, and the topics to avoid. Use it if you want to build your own post instead of one of the ready-made ones.</p>
         </div>
       </div>
 
@@ -1319,7 +1405,7 @@ function toggleSidebar(){
   document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 /* ===== NAV ===== */
-const PAGE_TITLES = { wall:'The Wall', dash:'Today', ideas:'Content Ideas', grid:'Browse & Search', ytl:'Competitors', trends:'Trends', settings:'Settings' };
+const PAGE_TITLES = { wall:'Terminal', dash:'Today', ideas:'Content Ideas', grid:'Browse & Search', ytl:'Competitors', trends:'Trends', settings:'Settings' };
 
 function navigateTo(page){
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.page===page));
@@ -1708,7 +1794,21 @@ function addTopic(){
   topics.push({name:val, count:0});
   input.value='';
   renderTopics();
+  pullRealNews();
 }
+function addTopicFromTerminal(){
+  const input = document.getElementById('terminalTopicInput');
+  const val = input.value.trim();
+  if(!val) return;
+  if(topics.length>=10){ alert('You already track 10 topics — remove one first.'); return; }
+  if(topics.some(t=>t.name.toLowerCase()===val.toLowerCase())){ alert(val+' is already tracked.'); return; }
+  topics.push({name:val, count:0});
+  input.value='';
+  renderTopics();
+  renderWall();
+  pullRealNews();
+}
+document.getElementById('terminalTopicInput')?.addEventListener('keydown', e=>{ if(e.key==='Enter') addTopicFromTerminal(); });
 function removeTopic(i){
   topics.splice(i,1);
   renderTopics();
@@ -1946,6 +2046,9 @@ function renderGrid(){
   let html = items.map((m,i)=>{
     const s = strengthOf(m);
     const [bg,fg] = strengthTint[s.cls];
+    const gridOpen = (m.real && m.url)
+      ? `<a href="${m.url}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="position:absolute;bottom:8px;right:8px;background:rgba(20,20,30,.6);color:#fff;font-size:9px;padding:3px 7px;border-radius:20px;font-weight:700;text-decoration:none;">Open ↗</a>`
+      : '';
     return `
     <div class="ig-card" onclick="openDetail('${m.id}')">
       <div class="ig-fill" style="background:${bg};color:${fg};">
@@ -1954,6 +2057,7 @@ function renderGrid(){
       </div>
       <span class="ig-plat">${platformIcons[m.platform]} ${m.platform}</span>
       <span class="ig-sent" style="background:${sentDot(m.sentiment)};"></span>
+      ${gridOpen}
       <div class="ig-eng"><span>${String(m.author).slice(0,18)}</span><span>${s.label}</span></div>
     </div>`;
   }).join('');
@@ -2866,10 +2970,13 @@ function renderNextSteps(){
 function wallItemHTML(m){
   const s = strengthOf(m);
   const tier = m.tier1 ? '<span class="m-tag" style="background:#fde68a;color:#4a3208;">MY TIER 1</span>' : '';
+  const openLink = (m.real && m.url)
+    ? `<a class="wi-open" href="${m.url}" target="_blank" rel="noopener" onclick="event.stopPropagation();">Open source ↗</a>`
+    : '';
   return `<div class="wall-item" onclick="openDetail('${m.id}')">
     <div class="wi-top"><span class="wi-src">${String(m.author).slice(0,26)}</span><span class="wi-time">${m.time||''}</span></div>
     <div class="wi-text">${(m.text||'').slice(0,120)}${(m.text||'').length>120?'…':''}</div>
-    <div class="wi-tags">${strengthBadge(m)}${tier}</div>
+    <div class="wi-tags">${strengthBadge(m)}${tier}${openLink}</div>
   </div>`;
 }
 
@@ -2937,14 +3044,15 @@ function renderWall(){
     : '<div class="wall-empty">No strongly positive coverage yet today. When it appears, it shows up here so you can share it.</div>';
 
   // --- Topics with activity bars ---
-  const counts = topics.map(t=>({ name:t.name, n: allMentions.filter(m=>m.topic===t.name).length }));
+  const counts = topics.map((t,i)=>({ name:t.name, n: allMentions.filter(m=>m.topic===t.name).length, idx:i }));
   const maxN = Math.max(1, ...counts.map(x=>x.n));
   document.getElementById('wallTopics').innerHTML = counts.map(t=>`
-    <div class="wall-topic-row" onclick="goToBrowseWithQuery('${t.name.replace(/'/g,"")}', '${t.name.replace(/'/g,"")}', 'A topic you track.', 'wall')">
+    <div class="wall-topic-row" onclick="navigateTo('trends')" title="See trends for this topic">
       <span class="wt-name">${t.name}</span>
       <div class="wt-bar"><div style="width:${(t.n/maxN)*100}%"></div></div>
       <span class="wt-count">${t.n}</span>
-    </div>`).join('');
+      <span class="rm" style="cursor:pointer;color:var(--text-dim2);flex-shrink:0;" onclick="event.stopPropagation();removeTopic(${t.idx});renderWall();" title="Remove">✕</span>
+    </div>`).join('') || '<div class="wall-empty">No topics tracked yet — add one above.</div>';
 
   // --- Sources ---
   const srcCounts = {};
@@ -3047,7 +3155,7 @@ function openCompetitor(name, segHint){
         <div style="flex:1;min-width:0;">
           <div class="ci-src">${String(m.author).slice(0,30)} · ${m.time||''}</div>
           <div class="ci-text">${(m.text||'').slice(0,130)}${(m.text||'').length>130?'…':''}</div>
-          <div>${strengthBadge(m)}</div>
+          <div style="display:flex;align-items:center;gap:8px;">${strengthBadge(m)}${(m.real && m.url) ? `<a href="${m.url}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="font-size:10.5px;color:var(--accent);font-weight:700;text-decoration:none;">Open source ↗</a>` : ''}</div>
         </div>
       </div>`).join('')
     : `<div class="cm-empty">No coverage of them in the feed right now. If you want to monitor them properly, add their name as a tracked topic — the button below does that in one click.</div>`;
@@ -3296,6 +3404,64 @@ function copyTag(tag){
   els.forEach(e=>{ if(e.textContent===tag){ const o=e.textContent; e.textContent='copied!'; setTimeout(()=>e.textContent=o, 900); } });
 }
 
+
+
+/* ===== SUGGESTED POSTS — turns Content Ideas into a ready-to-use guide, not a data dump ===== */
+const SUGGEST_FORMATS = ['Reels / short video', 'Carousel', 'Single image + caption'];
+
+function captionFor(m, idx){
+  const outlet = String(m.author||'').replace(/^www\./,'');
+  const templates = [
+    `📰 ${outlet} is reporting: "${(m.text||'').slice(0,110)}${(m.text||'').length>110?'…':''}"\n\nHere's why it matters for ${m.topic}: [add your one-line take].\n\n`,
+    `Big moment for ${m.topic} — ${outlet} covering it now.\n\n"${(m.text||'').slice(0,100)}${(m.text||'').length>100?'…':''}"\n\nWhat this means for us: [add context].\n\n`,
+    `Worth a share: ${outlet} on ${m.topic}.\n\n${(m.text||'').slice(0,110)}${(m.text||'').length>110?'…':''}\n\n[Add your team's perspective here.]\n\n`
+  ];
+  return templates[idx % templates.length];
+}
+
+function renderSuggestedPosts(){
+  const el = document.getElementById('suggestedPosts');
+  if(!el) return;
+  const positives = allMentions.filter(m => m.real && m.sentiment === 'pos');
+  const picks = topByRelevance(positives, 3);
+
+  if(!picks.length){
+    el.innerHTML = `<div style="font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:8px 0;">No strongly positive real coverage yet to build a suggestion from. Once something lands, a ready-to-post suggestion appears here automatically.</div>`;
+    return;
+  }
+
+  const kws = extractKeywords().slice(0,6).map(([w])=>toHashtag(w));
+  const evergreen = ['#YTL', '#MalaysiaBusiness'];
+
+  el.innerHTML = picks.map((m, i) => {
+    const tags = [...new Set([toHashtag(m.topic.split(' ')[0]), ...kws.slice(0,2), ...evergreen])].slice(0,5);
+    const caption = captionFor(m, i);
+    const captionId = 'suggestCaption' + i;
+    return `<div class="suggest-card">
+      <div class="suggest-head">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span class="suggest-num">${i+1}</span>
+          <strong style="font-size:12.5px;">${m.topic}</strong>
+        </div>
+        <span class="suggest-format">${SUGGEST_FORMATS[i % SUGGEST_FORMATS.length]}</span>
+      </div>
+      <div class="suggest-caption" id="${captionId}">${caption.replace(/\n/g,'<br>')}</div>
+      <div class="suggest-tags">${tags.map(t=>`<span class="hashtag" style="cursor:default;">${t}</span>`).join('')}</div>
+      <div class="suggest-actions">
+        <button class="suggest-btn primary" onclick="copySuggestion('${captionId}', ${JSON.stringify(tags.join(' '))})">Copy caption + tags</button>
+        <button class="suggest-btn" onclick="openDetail('${m.id}')">See the source story</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copySuggestion(captionId, tags){
+  const el = document.getElementById(captionId);
+  const text = (el?.innerText || '') + '\n\n' + tags;
+  navigator.clipboard?.writeText(text);
+  const btn = event?.target;
+  if(btn){ const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent = orig, 1000); }
+}
 
 /* ===== REAL TRENDING POSTS — Reddit sorted by actual engagement, not invented numbers ===== */
 let trendingPosts = [];
@@ -3763,6 +3929,7 @@ function tick(){
   renderSegCards();
   renderCustomComps();
   renderContentIdeas();
+  renderSuggestedPosts();
   renderNavCounts();
 }
 
