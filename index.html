@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal — PR Intelligence</title>
+<title>Signal — Social Listening</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -480,6 +480,27 @@
   .pres-dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:pulse 2s infinite;}
   .pres-off{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:9px 15px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
   .pres-off:hover{background:rgba(255,255,255,.25);}
+
+  .source-health-panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:18px;}
+  .source-health-panel h5{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:700;margin-bottom:4px;}
+  .source-health-panel .shp-sub{font-size:11px;color:var(--text-dim2);margin-bottom:12px;}
+  .shp-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
+  .shp-row:last-child{border-bottom:none;}
+  .shp-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);font-weight:600;}
+  .shp-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim2);}
+  .shp-status.live .shp-dot{background:var(--teal);}
+  .shp-status.manual .shp-dot{background:var(--amber);}
+
+  .work-queue{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 0;margin-bottom:18px;}
+  .wq-row{display:flex;gap:12px;align-items:flex-start;padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;}
+  .wq-row:last-child{border-bottom:none;}
+  .wq-row:hover{background:var(--surface-2);}
+  .wq-mark{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px;}
+  .wq-mark.respond{background:var(--accent-dim);color:var(--accent);}
+  .wq-mark.watch{background:var(--amber-dim);color:var(--amber);}
+  .wq-mark.amplify{background:var(--teal-dim);color:var(--teal);}
+  .wq-title{font-size:12.5px;font-weight:700;}
+  .wq-copy{font-size:11.5px;color:var(--text-dim);margin-top:2px;line-height:1.5;}
   .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 
   .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
@@ -534,21 +555,6 @@
   .bot-input button{background:var(--accent);border:none;border-radius:8px;padding:0 14px;color:#fff;font-weight:600;font-size:12px;cursor:pointer;}
   .bot-toggle{display:flex;align-items:center;gap:9px;background:var(--text);color:#fff;border:none;border-radius:30px;padding:12px 18px 12px 14px;font-weight:600;font-size:13px;cursor:pointer;box-shadow:0 10px 26px rgba(20,20,40,0.22);}
   .bot-ico{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;}
-  /* ===== SIGNAL V4 — PR COMMAND CENTRE ===== */
-  :root{--ink:#182033;--ink-soft:#667085;--canvas:#f7f8fc;--navy:#152238;--violet:#6554c0;--violet-soft:#eeebff;--mint:#10a37f;--mint-soft:#e7f7f2;--rose:#d92d5d;--rose-soft:#ffedf2;--gold:#b54708;--gold-soft:#fff2df;}
-  body{background:var(--canvas);color:var(--ink);}
-  .sidebar{background:#fff;border-right:1px solid #e6e8f0;width:232px;padding:24px 14px;}
-  .brand h1{letter-spacing:-.04em;font-size:20px;}.brand .dot{background:var(--violet);box-shadow:0 0 0 4px var(--violet-soft);}
-  .navitem{border-radius:9px;padding:10px 12px;color:#667085;}.navitem.active{background:#f0efff;color:var(--navy);font-weight:700;}.navitem.active .ic{color:var(--violet);}.navitem.active::before{background:var(--violet);left:-14px;}
-  .topbar{background:rgba(247,248,252,.92);padding:15px 38px;border-bottom:1px solid #e6e8f0;}.topbar-right .live{color:var(--violet);}
-  .page{padding:34px 38px 110px;max-width:1550px;width:100%;margin:0 auto;}.page-title h2{font-size:28px;letter-spacing:-.045em;color:var(--navy);}.page-title p{font-size:13px;line-height:1.5;}
-  .panel,.kpi,.wall-panel{border-color:#e6e8f0;box-shadow:0 2px 8px rgba(22,33,56,.035);}.btn-solid{background:var(--violet);}.btn-solid:hover{background:#5847b1;}.export-btn:hover{border-color:var(--violet);color:var(--violet);}
-  .signal-live{display:inline-flex;align-items:center;gap:7px;border:1px solid #d9d4fc;background:#f7f5ff;color:#5647a7;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;}.signal-live i{width:7px;height:7px;border-radius:50%;background:#6959cb;box-shadow:0 0 0 3px #e6e2ff;}
-  .command-hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,.78fr);gap:18px;margin-bottom:18px;}.command-summary{background:linear-gradient(135deg,#17253e 0%,#233b61 58%,#5847b1 150%);border-radius:18px;padding:28px;color:#fff;box-shadow:0 16px 36px rgba(23,37,62,.17);min-height:236px;position:relative;overflow:hidden;}.command-summary:after{content:'';position:absolute;right:-80px;top:-96px;width:250px;height:250px;border:1px solid rgba(255,255,255,.14);border-radius:50%;box-shadow:0 0 0 42px rgba(255,255,255,.035),0 0 0 86px rgba(255,255,255,.025);}.command-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#bac9df;font-weight:700;margin-bottom:16px;}.command-summary h3{font-size:28px;letter-spacing:-.045em;line-height:1.12;max-width:600px;position:relative;z-index:1;}.command-summary p{font-size:13px;line-height:1.55;color:#d9e2ef;max-width:580px;margin-top:10px;position:relative;z-index:1;}.command-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px;position:relative;z-index:1;}.command-btn{border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:9px 12px;background:rgba(255,255,255,.08);color:#fff;font:600 12px Inter,sans-serif;cursor:pointer;}.command-btn.primary{background:#fff;color:#26395a;border-color:#fff;}.command-btn:hover{transform:translateY(-1px);}
-  .readiness-card{background:#fff;border:1px solid #e6e8f0;border-radius:18px;padding:22px;display:flex;flex-direction:column;}.readiness-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}.readiness-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#667085;font-weight:700;}.readiness-score{font:700 28px 'IBM Plex Mono',monospace;color:var(--mint);letter-spacing:-.08em;}.readiness-title{font-size:17px;line-height:1.25;color:var(--navy);margin-top:14px;letter-spacing:-.025em;}.readiness-copy{font-size:12px;line-height:1.55;color:var(--ink-soft);margin-top:7px;}.readiness-meta{margin-top:auto;display:flex;gap:8px;align-items:center;color:#667085;font-size:11px;padding-top:18px;}.meta-dot{width:6px;height:6px;border-radius:50%;background:var(--mint);}
-  .command-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}.signal-stat{background:#fff;border:1px solid #e6e8f0;border-radius:12px;padding:15px 16px;cursor:pointer;transition:.16s transform,.16s box-shadow;}.signal-stat:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(16,24,40,.08);}.signal-stat .label{font-size:11px;color:#667085;font-weight:600;}.signal-stat .value{font:700 23px 'IBM Plex Mono',monospace;color:var(--navy);margin-top:7px;letter-spacing:-.07em;}.signal-stat .note{margin-top:4px;font-size:10.5px;color:#98a2b3;}.signal-stat.critical .value{color:var(--rose);}.signal-stat.positive .value{color:var(--mint);}.signal-stat.watch .value{color:var(--gold);}
-  .command-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.85fr);gap:18px;align-items:start;}.command-panel{background:#fff;border:1px solid #e6e8f0;border-radius:16px;overflow:hidden;}.command-panel-head{padding:18px 20px 14px;border-bottom:1px solid #eef0f4;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}.command-panel-head h4{font-size:15px;letter-spacing:-.02em;color:var(--navy);}.command-panel-head p{font-size:11px;color:#667085;margin-top:3px;}.text-action{border:0;background:transparent;color:var(--violet);font:700 11px Inter,sans-serif;cursor:pointer;white-space:nowrap;padding:4px 0;}.priority-row{padding:15px 20px;border-bottom:1px solid #eef0f4;display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:start;cursor:pointer;}.priority-row:hover{background:#fbfbfe;}.priority-number{font:700 12px 'IBM Plex Mono',monospace;color:#98a2b3;padding-top:3px;}.priority-title{font-size:13px;line-height:1.42;font-weight:700;color:var(--navy);}.priority-sub{font-size:11px;line-height:1.45;color:#667085;margin-top:4px;}.priority-right{text-align:right;min-width:88px;}.source-pill{display:inline-flex;padding:3px 7px;border-radius:99px;background:#f2f4f7;color:#475467;font-size:9.5px;font-weight:700;}.impact-pill{display:block;font:700 11px 'IBM Plex Mono',monospace;margin-top:6px;color:#344054;}.empty-command{padding:30px 20px;color:#667085;font-size:12.5px;line-height:1.55;text-align:center;}.work-list{padding:7px 0;}.work-row{display:flex;gap:10px;align-items:flex-start;padding:13px 20px;border-bottom:1px solid #eef0f4;}.work-row:last-child{border-bottom:0;}.work-mark{width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:11px;font-weight:800;}.work-mark.respond{background:var(--rose-soft);color:var(--rose);}.work-mark.watch{background:var(--gold-soft);color:var(--gold);}.work-mark.amplify{background:var(--mint-soft);color:var(--mint);}.work-title{font-size:12px;line-height:1.42;font-weight:700;color:var(--navy);}.work-copy{font-size:10.5px;line-height:1.45;color:#667085;margin-top:2px;}.command-side{display:flex;flex-direction:column;gap:18px;}.narrative-list{padding:7px 20px 16px;}.narrative-row{padding:13px 0;border-bottom:1px solid #eef0f4;}.narrative-row:last-child{border-bottom:0;}.narrative-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;color:var(--navy);}.narrative-bar{height:6px;border-radius:99px;background:#edf0f4;margin-top:9px;overflow:hidden;}.narrative-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#6858cd,#978ae5);}.narrative-meta{font-size:10.5px;color:#98a2b3;margin-top:5px;}.source-health{padding:12px 20px 18px;display:grid;gap:9px;}.source-health-row{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:#475467;}.source-health-row strong{font:600 10.5px 'IBM Plex Mono',monospace;color:#667085;}.source-status{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#667085;}.source-status i{width:6px;height:6px;border-radius:50%;background:#98a2b3;}.source-status.live i{background:var(--mint);}.ingest-note{padding:12px 20px 16px;border-top:1px solid #eef0f4;background:#fbfbfd;font-size:10.5px;color:#667085;line-height:1.5;}
-  @media(max-width:1120px){.command-hero,.command-grid{grid-template-columns:1fr;}.command-strip{grid-template-columns:repeat(2,1fr);}}@media(max-width:700px){.page{padding:24px 18px 90px;}.topbar{padding:13px 18px;}.topbar-right .mono{display:none;}.command-summary{padding:22px;min-height:220px;}.command-summary h3{font-size:24px;}.command-strip{grid-template-columns:1fr 1fr;gap:9px;}.signal-stat{padding:13px;}.priority-row{padding:14px 15px;grid-template-columns:26px minmax(0,1fr);}.priority-right{display:none;}.command-panel-head{padding:16px;}.work-row{padding:12px 16px;}.narrative-list{padding-left:16px;padding-right:16px;}.source-health{padding-left:16px;padding-right:16px;}}
 </style>
 </head>
 <body>
@@ -596,16 +602,17 @@
       <div class="dot"></div><h1>Signal</h1>
       <span class="brand-home">home</span>
     </div>
-    <div class="nav-group">Intelligence</div>
-    <div class="navitem active" data-page="command"><span class="ic">◉</span>Command centre<span class="nav-count" id="navCountToday"></span></div>
-    <div class="navitem" data-page="grid"><span class="ic">▤</span>Intelligence feed<span class="nav-count" id="navCountBrowse"></span></div>
-    <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitive pulse</div>
-    <div class="nav-group">Create</div>
-    <div class="navitem" data-page="ideas"><span class="ic">✎</span>Content studio</div>
-    <div class="navitem" data-page="trends"><span class="ic">↗</span>Social signals<span class="nav-pill">preview</span></div>
+    <div class="nav-group">Live data</div>
+    <div class="navitem active" data-page="wall"><span class="ic">▦</span>The Wall<span class="nav-count" id="navCountWall"></span></div>
+    <div class="navitem" data-page="dash"><span class="ic">◆</span>Today<span class="nav-count" id="navCountToday"></span></div>
+    <div class="navitem" data-page="grid"><span class="ic">▤</span>Browse &amp; Search<span class="nav-count" id="navCountBrowse"></span></div>
+    <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitors</div>
+    <div class="navitem" data-page="ideas"><span class="ic">✎</span>Content Ideas</div>
+    <div class="nav-group">Needs a data source</div>
+    <div class="navitem" data-page="trends"><span class="ic">↗</span>Trends<span class="nav-pill">preview</span></div>
     <div class="nav-group">Setup</div>
     <div class="navitem" data-page="settings"><span class="ic">⚙</span>Settings</div>
-    <div class="sidebar-foot">Live: <strong style="color:var(--text-dim);">news + Reddit</strong>.<br>Manual intake covers IG, Facebook and LinkedIn. Preview data is always labelled.</div>
+    <div class="sidebar-foot">Live: <strong style="color:var(--text-dim);">news + Reddit</strong>, refreshed each minute.<br>Sections marked <em>preview</em> use example data until a source is connected.</div>
   </div>
 
   <div class="main">
@@ -624,21 +631,8 @@
       </div>
     </div>
 
-    <!-- COMMAND CENTRE — one decision-led morning briefing -->
-    <div class="page active" id="page-command">
-      <div class="page-title">
-        <div>
-          <div class="signal-live"><i></i><span id="commandLiveLabel">Monitoring live sources</span></div>
-          <h2 style="margin-top:12px;">PR command centre</h2>
-          <p>Your decision layer for coverage, conversation and the next communications move.</p>
-        </div>
-        <button class="export-btn" onclick="exportDigestExcel()">⭳ Export daily brief</button>
-      </div>
-      <div id="commandCentre"></div>
-    </div>
-
-    <!-- Legacy all-at-once wall, retained for backwards compatibility -->
-    <div class="page" id="page-wall">
+    <!-- 0. THE WALL — everything on one screen -->
+    <div class="page active" id="page-wall">
       <div class="page-title">
         <div>
           <h2>The Wall</h2>
@@ -734,6 +728,10 @@
 
       <div id="crisisZone"></div>
 
+      <div class="source-health-panel" id="sourceHealthPanel"></div>
+
+      <div class="work-queue" id="workQueue"></div>
+
       <div class="orient" id="orientBanner">
         <span class="oi">👋</span>
         <div style="flex:1;">
@@ -783,7 +781,7 @@
 
     <!-- 2. BROWSE (grid + everything merged) -->
     <div class="page" id="page-grid">
-      <div class="page-title"><div><h2>Intelligence feed</h2><p>Every scored item in one place. Search the evidence, filter the noise and open the source.</p></div></div>
+      <div class="page-title"><div><h2>Browse &amp; search</h2><p>Everything we've collected. Search it, filter it, or look back over time.</p></div></div>
 
       <div id="browseContext"></div>
 
@@ -830,7 +828,7 @@
 
     <!-- 3. US VS THEM (YTL watch + news stories merged) -->
     <div class="page" id="page-ytl">
-      <div class="page-title"><div><h2>Competitive pulse</h2><p>Compare YTL's narrative position with the companies shaping the same conversations.</p></div></div>
+      <div class="page-title"><div><h2>Competitor News</h2><p>How much of the conversation is about YTL, and what our competitors are up to.</p></div></div>
 
       
       <div class="kpi-row">
@@ -885,8 +883,8 @@
     <div class="page" id="page-ideas">
       <div class="page-title">
         <div>
-          <h2>Content studio</h2>
-          <p>Develop evidence-led angles, messages and posts from the signals in your monitored feed.</p>
+          <h2>Content Ideas</h2>
+          <p>What to post about this week — worked out from the news actually coming in, not guesswork.</p>
         </div>
       </div>
 
@@ -934,8 +932,8 @@
     <div class="page" id="page-trends">
       <div class="page-title">
         <div>
-          <h2>Social signals</h2>
-          <p>Separate authorised social signals from manual intake and clearly-labelled illustrative examples.</p>
+          <h2>Trends</h2>
+          <p>What's actually getting traction right now — real posts, real numbers.</p>
         </div>
         <button class="export-btn" onclick="pullTrending()">↻ Refresh trending</button>
       </div>
@@ -1321,7 +1319,7 @@ function toggleSidebar(){
   document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 /* ===== NAV ===== */
-const PAGE_TITLES = { command:'Command centre', wall:'The Wall', dash:'Today', ideas:'Content studio', grid:'Intelligence feed', ytl:'Competitive pulse', trends:'Social signals', settings:'Settings' };
+const PAGE_TITLES = { wall:'The Wall', dash:'Today', ideas:'Content Ideas', grid:'Browse & Search', ytl:'Competitors', trends:'Trends', settings:'Settings' };
 
 function navigateTo(page){
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.page===page));
@@ -1345,7 +1343,7 @@ document.querySelectorAll('.navitem').forEach(el=>{
 
 function goHome(){
   clearBrowseContext(true);
-  navigateTo('command');
+  navigateTo('dash');
 }
 
 /* ===== BROWSE CONTEXT — every drill-in explains itself and offers next steps ===== */
@@ -2628,6 +2626,56 @@ function renderCaseStatusPicker(){
   ).join('');
 }
 
+
+/* ===== SOURCE HEALTH — honest status per source, no invented scores ===== */
+function renderSourceHealth(){
+  const el = document.getElementById('sourceHealthPanel');
+  if(!el) return;
+  const has = p => allMentions.some(m => m.platform === p && m.real);
+  const ytKey = (localStorage.getItem('signal_youtube_key')||'').trim();
+  const rows = [
+    ['News', has('News') ? 'live' : 'checking', has('News') ? 'Live' : 'Checking'],
+    ['Reddit', has('Reddit') ? 'live' : 'checking', has('Reddit') ? 'Live' : 'Checking'],
+    ['YouTube', ytKey ? (has('YouTube') ? 'live' : 'checking') : 'manual', ytKey ? (has('YouTube') ? 'Live' : 'Checking') : 'Needs a free key — see Settings'],
+    ['Instagram / Facebook / X', 'manual', 'Manual intake only — no free API exists']
+  ];
+  el.innerHTML = `<h5>Where your data is actually coming from</h5>
+    <div class="shp-sub">Nothing here is a score — just what's currently connected, so you always know what's real.</div>` +
+    rows.map(([name, cls, label]) => `
+      <div class="shp-row">
+        <span>${name}</span>
+        <span class="shp-status ${cls}"><span class="shp-dot"></span>${label}</span>
+      </div>`).join('');
+}
+
+
+/* ===== WORK QUEUE — plain "what to do" list, no invented score attached to it ===== */
+function renderWorkQueue(){
+  const el = document.getElementById('workQueue');
+  if(!el) return;
+  const urgent = allMentions.filter(m => strengthOf(m).urgent && getCaseStatus(m.id) !== 'resolved');
+  const positive = topByRelevance(allMentions.filter(m => strengthOf(m).cls === 'st-strongpos'), 1);
+  const rows = [];
+
+  if(urgent.length){
+    const top = topByRelevance(urgent, 1)[0];
+    rows.push(['respond', '!', 'Respond', `${top.author}: "${top.text.slice(0,80)}${top.text.length>80?'…':''}"`, `openDetail('${top.id}')`]);
+  }
+  if(positive.length){
+    const p = positive[0];
+    rows.push(['amplify', '↗', 'Worth amplifying', `${p.author}: "${p.text.slice(0,80)}${p.text.length>80?'…':''}"`, `openDetail('${p.id}')`]);
+  }
+  if(!urgent.length && !positive.length){
+    rows.push(['watch', '◌', 'Nothing urgent right now', 'Check back as new coverage comes in, or browse everything collected so far.', "clearBrowseContext(true);navigateTo('grid');runSearch();"]);
+  }
+
+  el.innerHTML = rows.map(([cls, icon, title, copy, action]) => `
+    <div class="wq-row" onclick="${action}">
+      <span class="wq-mark ${cls}">${icon}</span>
+      <div><div class="wq-title">${title}</div><div class="wq-copy">${copy}</div></div>
+    </div>`).join('');
+}
+
 /* ===== CRISIS ZONE — the banner that answers "is anything on fire" ===== */
 function renderCrisisZone(){
   const zone = document.getElementById('crisisZone');
@@ -3689,95 +3737,6 @@ function renderPresentationBanner(){
     : '';
 }
 
-/* ===== COMMAND CENTRE — detect → assess → decide → create ===== */
-function commandPriorityItem(m, index){
-  const s = strengthOf(m);
-  const tone = m.sentiment === 'neg' ? 'Needs attention' : m.sentiment === 'pos' ? 'Opportunity' : 'Watch';
-  const source = m.author || m.platform || 'Source';
-  return `<div class="priority-row" onclick="openDetail('${m.id}')">
-    <div class="priority-number">0${index + 1}</div>
-    <div><div class="priority-title">${m.text || 'Untitled coverage'}</div><div class="priority-sub">${source} · ${m.platform || 'Coverage'} · ${m.time || 'recently'} · ${tone}</div></div>
-    <div class="priority-right"><span class="source-pill">${m.tier1 ? 'Tier 1' : (m.platform || 'Source')}</span><span class="impact-pill">${m.relevance || 0}/100</span></div>
-  </div>`;
-}
-
-function commandWorkRow(kind, title, copy, action){
-  const icon = kind === 'respond' ? '!' : kind === 'amplify' ? '↗' : '◌';
-  return `<div class="work-row" ${action ? `onclick="${action}" style="cursor:pointer;"` : ''}>
-    <span class="work-mark ${kind}">${icon}</span>
-    <div><div class="work-title">${title}</div><div class="work-copy">${copy}</div></div>
-  </div>`;
-}
-
-function renderCommand(){
-  const el = document.getElementById('commandCentre');
-  if(!el) return;
-  const urgent = allMentions.filter(m => strengthOf(m).urgent && getCaseStatus(m.id) !== 'resolved');
-  const positive = allMentions.filter(m => m.sentiment === 'pos');
-  const negative = allMentions.filter(m => m.sentiment === 'neg');
-  const priority = topByRelevance(allMentions, 4);
-  const score = urgent.length ? Math.max(42, 82 - urgent.length * 12) : allMentions.length ? 88 : 100;
-  const primary = urgent[0] || priority[0];
-  const statusTitle = urgent.length
-    ? `${urgent.length} coverage item${urgent.length > 1 ? 's need' : ' needs'} a communications decision`
-    : primary
-      ? 'No immediate PR issue. Focus on the highest-impact narrative.'
-      : 'Your monitored feed is warming up.';
-  const statusCopy = urgent.length
-    ? `Start with ${primary.author || primary.platform}: assess the narrative, decide the owner, then log the response position.`
-    : primary
-      ? `${primary.author || primary.platform} is currently the strongest signal. Review it before the wider feed.`
-      : 'News and Reddit are being checked. Connect the n8n pipeline to surface scored coverage, clusters and recommendations here.';
-  const topicsWithCounts = topics.map(t => ({name:t.name, n:allMentions.filter(m => m.topic === t.name).length}))
-    .sort((a,b) => b.n - a.n).slice(0,3);
-  const maxTopic = Math.max(1, ...topicsWithCounts.map(t=>t.n));
-  const readinessLabel = urgent.length ? 'Attention required' : allMentions.length ? 'Ready to brief' : 'Monitoring active';
-  const live = allMentions.length ? `${allMentions.length} scored signals in the current feed` : 'Live sources checking for new coverage';
-  const actions = [];
-  if(urgent.length){ actions.push(commandWorkRow('respond', 'Assess response position', `Open the ${urgent.length} item${urgent.length > 1 ? 's' : ''} flagged for potential response.`, `openDetail('${urgent[0].id}')`)); }
-  if(priority.length){ actions.push(commandWorkRow('watch', 'Read the lead narrative', `${priority[0].author || priority[0].platform} is the highest-impact item in the feed.`, `openDetail('${priority[0].id}')`)); }
-  if(positive.length){ actions.push(commandWorkRow('amplify', 'Find an angle worth amplifying', `${positive.length} positive signal${positive.length > 1 ? 's are' : ' is'} available for content development.`, `navigateTo('ideas')`)); }
-  if(!actions.length){ actions.push(commandWorkRow('watch', 'Check the intelligence feed', 'No scored coverage has arrived yet. Review your source and n8n connection status.', `navigateTo('settings')`)); }
-  const sourceState = (platform, mode) => `<div class="source-health-row"><span>${platform}</span><span class="source-status ${mode === 'Live' ? 'live' : ''}"><i></i>${mode}</span></div>`;
-  el.innerHTML = `
-    <div class="command-hero">
-      <section class="command-summary">
-        <div class="command-kicker">Today’s communications picture</div>
-        <h3>${statusTitle}</h3>
-        <p>${statusCopy}</p>
-        <div class="command-actions">
-          <button class="command-btn primary" onclick="navigateTo('grid');runSearch()">Review intelligence feed</button>
-          <button class="command-btn" onclick="document.getElementById('botPanel').classList.remove('hidden');botSendText('What is the single most important communications action today?')">Ask Signal for a recommendation</button>
-        </div>
-      </section>
-      <aside class="readiness-card">
-        <div class="readiness-top"><span class="readiness-label">PR readiness</span><span class="readiness-score">${score}</span></div>
-        <div class="readiness-title">${readinessLabel}</div>
-        <p class="readiness-copy">A practical indicator based on response-needed coverage, narrative strength and the health of your monitored feed.</p>
-        <div class="readiness-meta"><span class="meta-dot"></span>${live}</div>
-      </aside>
-    </div>
-    <div class="command-strip">
-      <div class="signal-stat critical" onclick="navigateTo('grid');setTone('neg')"><div class="label">Needs attention</div><div class="value">${urgent.length}</div><div class="note">Response-review candidates</div></div>
-      <div class="signal-stat" onclick="navigateTo('grid');runSearch()"><div class="label">Signals collected</div><div class="value">${allMentions.length}</div><div class="note">News, forums and connected sources</div></div>
-      <div class="signal-stat positive" onclick="navigateTo('ideas')"><div class="label">Amplify candidates</div><div class="value">${positive.length}</div><div class="note">Positive coverage to develop</div></div>
-      <div class="signal-stat watch" onclick="navigateTo('ytl')"><div class="label">Narratives to watch</div><div class="value">${Math.max(0, negative.length)}</div><div class="note">Critical or mixed coverage</div></div>
-    </div>
-    <div class="command-grid">
-      <section class="command-panel">
-        <div class="command-panel-head"><div><h4>Priority reading</h4><p>Ranked by PR impact, source authority and emerging risk.</p></div><button class="text-action" onclick="navigateTo('grid');runSearch()">OPEN FEED →</button></div>
-        ${priority.length ? priority.map(commandPriorityItem).join('') : '<div class="empty-command">No scored coverage yet. When your n8n pipeline posts a news, social or manual-intake item, Signal will rank it here.</div>'}
-      </section>
-      <aside class="command-side">
-        <section class="command-panel"><div class="command-panel-head"><div><h4>Work queue</h4><p>The next moves for the PR team.</p></div></div><div class="work-list">${actions.join('')}</div></section>
-        <section class="command-panel"><div class="command-panel-head"><div><h4>Narrative watch</h4><p>What is occupying the monitored conversation.</p></div><button class="text-action" onclick="navigateTo('ytl')">COMPARE →</button></div><div class="narrative-list">${topicsWithCounts.map(t=>`<div class="narrative-row"><div class="narrative-top"><span>${t.name}</span><span>${t.n}</span></div><div class="narrative-bar"><div class="narrative-fill" style="width:${(t.n/maxTopic)*100}%"></div></div><div class="narrative-meta">${t.n ? 'Coverage picked up in the current feed' : 'Monitoring for coverage'}</div></div>`).join('')}</div></section>
-        <section class="command-panel"><div class="command-panel-head"><div><h4>Source health</h4><p>Be explicit about what is live and what needs intake.</p></div><button class="text-action" onclick="navigateTo('settings')">SETUP →</button></div><div class="source-health">${sourceState('News monitoring', allMentions.some(m=>m.platform==='News') ? 'Live' : 'Checking')}${sourceState('Reddit', allMentions.some(m=>m.platform==='Reddit') ? 'Live' : 'Checking')}${sourceState('YouTube', allMentions.some(m=>m.platform==='YouTube') ? 'Live' : 'Optional')}${sourceState('IG / FB / LinkedIn', 'Manual intake')}</div><div class="ingest-note">Signal only presents social figures as live when they come from an authorised data source. Example content remains visibly labelled.</div></section>
-      </aside>
-    </div>`;
-  const liveEl = document.getElementById('commandLiveLabel');
-  if(liveEl) liveEl.textContent = allMentions.length ? 'Scored coverage is live' : 'Monitoring live sources';
-}
-
 /* ===== MAIN LOOP ===== */
 // Demo social posts are OFF by default now — the feed leads with real news/Reddit,
 // not a constant stream of fabricated posts. Toggle in Settings if you want to see
@@ -3798,7 +3757,8 @@ function tick(){
   renderGrid();
   renderYtl();
   renderCrisisZone();
-  renderCommand();
+  renderSourceHealth();
+  renderWorkQueue();
   renderWall();
   renderSegCards();
   renderCustomComps();
@@ -3833,7 +3793,7 @@ loadYoutubeKey();
 renderNextSteps();
 renderNavCounts();
 renderMockSocial();
-// The command centre communicates the workflow in context; do not block a first briefing with a modal.
+maybeShowWelcome();
 document.getElementById('demoModeToggle').checked = demoMode;
 if(presentationMode){ loadDemoData(); }
 renderPresentationBanner();
