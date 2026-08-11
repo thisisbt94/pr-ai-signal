@@ -488,15 +488,7 @@
   .pres-off{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:9px 15px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
   .pres-off:hover{background:rgba(255,255,255,.25);}
 
-  .source-health-panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:18px;}
-  .source-health-panel h5{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:700;margin-bottom:4px;}
-  .source-health-panel .shp-sub{font-size:11px;color:var(--text-dim2);margin-bottom:12px;}
-  .shp-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;}
-  .shp-row:last-child{border-bottom:none;}
-  .shp-status{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);font-weight:600;}
-  .shp-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim2);}
-  .shp-status.live .shp-dot{background:var(--teal);}
-  .shp-status.manual .shp-dot{background:var(--amber);}
+
 
   .work-queue{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 0;margin-bottom:18px;}
   .wq-row{display:flex;gap:12px;align-items:flex-start;padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer;}
@@ -511,6 +503,16 @@
   .wq-quick{flex-shrink:0;background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--teal);cursor:pointer;align-self:center;}
   .wq-quick:hover{background:var(--teal-dim);border-color:var(--teal);}
 
+  .lds-status-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+  .lds-chip{font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;}
+  .lds-chip::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .lds-chip.live{background:var(--teal-dim);color:var(--teal);}
+  .lds-chip.live::before{background:var(--teal);}
+  .lds-chip.addable{background:var(--amber-dim);color:var(--amber);}
+  .lds-chip.addable::before{background:var(--amber);}
+  .lds-chip.none{background:var(--surface-3);color:var(--text-dim);}
+  .lds-chip.none::before{background:var(--text-dim2);}
+  .lds-hint{font-size:11px;color:var(--text-dim2);margin:10px 0 12px;line-height:1.5;}
   .apikey-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
   .apikey-add-row select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12.5px;font-family:inherit;flex:1;min-width:200px;}
   .apikey-add-row input{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;font-family:inherit;flex:1;min-width:160px;}
@@ -769,8 +771,6 @@
       </div>
 
       <div id="crisisZone"></div>
-
-      <div class="source-health-panel" id="sourceHealthPanel"></div>
 
       <div class="work-queue" id="workQueue"></div>
 
@@ -1069,23 +1069,27 @@
 
       <div class="section-head">Live data sources</div>
       <div class="panel" style="margin-bottom:20px;">
-        <p style="font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;">
-          News (global + Tier 1 Malaysian outlets: The Star, NST, Bernama, The Edge, Malay Mail, and more) and Reddit are already live — no setup needed.
-          Add as many API keys below as you want — there's no limit. Three are wired up to actually pull real coverage the moment you add a key (YouTube, NewsAPI.org, GNews.io);
-          anything else gets saved for when you're ready to wire it in. Instagram/Facebook/X have no free path — see the DEMO toggle below for what that would look like.
-        </p>
+        <div class="lds-status-row">
+          <span class="lds-chip live">News — live</span>
+          <span class="lds-chip live">Reddit — live</span>
+          <span class="lds-chip addable" id="ldsYoutube">YouTube — add a key</span>
+          <span class="lds-chip addable" id="ldsNewsapi">NewsAPI.org — add a key</span>
+          <span class="lds-chip addable" id="ldsGnews">GNews.io — add a key</span>
+          <span class="lds-chip none">Instagram / Facebook / X — no free option</span>
+        </div>
 
         <div class="apikey-add-row">
           <select id="apiKeySource">
-            <option value="youtube">YouTube Data API — live now once added</option>
-            <option value="newsapi">NewsAPI.org — live now once added</option>
-            <option value="gnews">GNews.io — live now once added</option>
-            <option value="custom">Other / custom — saved, not wired yet</option>
+            <option value="youtube">YouTube</option>
+            <option value="newsapi">NewsAPI.org</option>
+            <option value="gnews">GNews.io</option>
+            <option value="custom">Other</option>
           </select>
           <input type="text" id="apiKeyCustomLabel" placeholder="Name it…" style="display:none;">
           <input type="password" id="apiKeyValue" placeholder="Paste the API key…">
           <button class="btn-solid" onclick="addApiKey()">Save key</button>
         </div>
+        <p class="lds-hint">Add as many as you want. The three above go live the moment you add a key — anything else under "Other" is just saved for later.</p>
         <div id="apiKeyList"></div>
 
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
@@ -2553,8 +2557,20 @@ function removeApiKey(idx){
   renderApiKeyList();
 }
 
+function updateLdsChips(){
+  const map = { youtube:'ldsYoutube', newsapi:'ldsNewsapi', gnews:'ldsGnews' };
+  Object.entries(map).forEach(([src, id]) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const has = !!getApiKey(src);
+    el.className = 'lds-chip ' + (has ? 'live' : 'addable');
+    el.textContent = has ? `${WIRED_SOURCES[src]} — live` : `${WIRED_SOURCES[src]} — add a key`;
+  });
+}
+
 function renderApiKeyList(){
   const el = document.getElementById('apiKeyList');
+  updateLdsChips();
   if(!el) return;
   if(!apiKeys.length){
     el.innerHTML = `<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">No keys added yet. YouTube, NewsAPI.org, and GNews.io go live the moment you add one — everything else is safe to store here too, just not pulling data yet.</div>`;
@@ -2812,30 +2828,6 @@ function renderCaseStatusPicker(){
   ).join('');
 }
 
-
-
-/* ===== SOURCE HEALTH — honest status per source, no invented scores ===== */
-function renderSourceHealth(){
-  const el = document.getElementById('sourceHealthPanel');
-  if(!el) return;
-  const has = p => allMentions.some(m => m.platform === p && m.real);
-  const ytKey = getApiKey('youtube');
-  const rows = [
-    ['News (global + Tier 1 MY)', has('News') ? 'live' : 'checking', has('News') ? 'Live' : 'Checking'],
-    ['NewsAPI.org', getApiKey('newsapi') ? 'live' : 'manual', getApiKey('newsapi') ? 'Key added — pulling' : 'No key — add one in Settings'],
-    ['GNews.io', getApiKey('gnews') ? 'live' : 'manual', getApiKey('gnews') ? 'Key added — pulling' : 'No key — add one in Settings'],
-    ['Reddit', has('Reddit') ? 'live' : 'checking', has('Reddit') ? 'Live' : 'Checking'],
-    ['YouTube', ytKey ? (has('YouTube') ? 'live' : 'checking') : 'manual', ytKey ? (has('YouTube') ? 'Live' : 'Checking') : 'Needs a free key — see Settings'],
-    ['Instagram / Facebook / X', 'manual', 'Manual intake only — no free API exists']
-  ];
-  el.innerHTML = `<h5>Where your data is actually coming from</h5>
-    <div class="shp-sub">Nothing here is a score — just what's currently connected, so you always know what's real.</div>` +
-    rows.map(([name, cls, label]) => `
-      <div class="shp-row">
-        <span>${name}</span>
-        <span class="shp-status ${cls}"><span class="shp-dot"></span>${label}</span>
-      </div>`).join('');
-}
 
 
 /* ===== WORK QUEUE — plain "what to do" list, no invented score attached to it ===== */
@@ -4068,7 +4060,6 @@ function tick(){
   renderGrid();
   renderYtl();
   renderCrisisZone();
-  renderSourceHealth();
   renderWorkQueue();
   renderWall();
   renderSegCards();
