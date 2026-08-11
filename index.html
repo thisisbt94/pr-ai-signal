@@ -473,6 +473,13 @@
   .comp-chip-n{font-family:'IBM Plex Mono',monospace;font-size:10.5px;background:var(--surface);border-radius:10px;padding:1px 7px;color:var(--text-dim);min-width:20px;text-align:center;}
   .comp-chip.has-news .comp-chip-n{background:#fff;color:var(--accent);}
   .cc-yours{font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;background:var(--teal-dim);color:var(--teal);padding:1px 5px;border-radius:20px;font-weight:700;}
+
+  .pres-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#1a1d29 0%,#2a3040 100%);color:#fff;border-radius:12px;padding:14px 20px;margin-bottom:18px;}
+  .pres-banner strong{display:block;font-size:13.5px;margin-bottom:2px;}
+  .pres-banner span{font-size:12px;opacity:.8;line-height:1.5;}
+  .pres-dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:pulse 2s infinite;}
+  .pres-off{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:9px 15px;font-size:11.5px;font-weight:600;cursor:pointer;flex-shrink:0;}
+  .pres-off:hover{background:rgba(255,255,255,.25);}
   .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 
   .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
@@ -615,6 +622,7 @@
         </div>
       </div>
 
+      <div id="presentationBanner"></div>
       <div id="wallCrisis"></div>
 
       <div class="wall-numbers" id="wallNumbers"></div>
@@ -1019,7 +1027,11 @@
         </div>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
           <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;">
-            <input type="checkbox" id="demoModeToggle" onchange="setDemoMode(this.checked)"> Show example social posts (clearly labeled DEMO — not real, for visualising what X/IG/FB coverage would look like)
+            <input type="checkbox" id="presToggle" onchange="setPresentationMode(this.checked)"> <strong>Presentation mode</strong> — fill the whole dashboard with realistic example coverage, for demos and walkthroughs
+          </label>
+          <div style="font-size:11px;color:var(--text-dim);margin:6px 0 14px 24px;line-height:1.5;">Turn this on before showing someone the tool. It populates every page with believable YTL and competitor stories so nothing looks empty. A banner stays visible so nobody mistakes it for live reporting.</div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;">
+            <input type="checkbox" id="demoModeToggle" onchange="setDemoMode(this.checked)"> Also stream random example social chatter
           </label>
         </div>
       </div>
@@ -3412,6 +3424,47 @@ const MOCK_SOCIAL = [
     why:'Human-interest posts from corporate accounts consistently outperform corporate announcements. Low share count but strong likes — people appreciate it, they just don\'t forward company milestones.',
     action:'Good baseline performance. Pair the next one with something shareable — a fact, a number, or a piece of access — to convert those likes into reach.'
   }
+  ,{
+    platform:'Instagram', handle:'@ytlcommunity', name:'YTL Community', verified:true,
+    avatar:'#0e9c86', time:'6h', type:'Carousel',
+    caption:'Phase 1 at Kulai, powered entirely by renewables. Swipe to see how we got here 🌱 #GreenDataCentre #YTL #Sustainability',
+    visual:'5 slides · construction to commissioning',
+    visualBg:'#e0f6f1', visualFg:'#0a5b4d',
+    likes:6240, comments:284, shares:512, velocity:'warm',
+    why:'Sustainability angle performs consistently well for infrastructure brands, and the carousel gives people a reason to keep tapping. Comments are asking technical questions — a sign the audience is genuinely interested rather than passively scrolling.',
+    action:'Reply to the technical questions in-thread. Free credibility, and it signals the account is staffed by people who actually know the facility.'
+  },
+  {
+    platform:'X', handle:'@BursaMktplc', name:'Bursa Marketplace', verified:true,
+    avatar:'#2469c9', time:'9h', type:'Post',
+    caption:'YTL Power closes at a 52-week high. Infrastructure names with AI exposure continue to outperform the broader index. $YTLPOWR',
+    visual:'Price chart · 12-month view',
+    visualBg:'#e2edfb', visualFg:'#123c73',
+    likes:1870, comments:143, shares:604, velocity:'warm',
+    why:'Market-data accounts get reshared into investor groups and WhatsApp chains, so reach extends well past the follower count. Neutral framing means it travels without controversy.',
+    action:'Nothing to do — this is exactly the coverage you want happening on its own. Worth logging for the IR team\'s weekly summary.'
+  },
+  {
+    platform:'Facebook', handle:'Johor Community Watch', name:'Johor Community Watch', verified:false,
+    avatar:'#c9821e', time:'14h', type:'Post',
+    caption:'Water usage at the new data centres — has anyone actually seen the environmental impact assessment? Asking as a resident.',
+    visual:'Text post · 340 comments',
+    visualBg:'#fbedd9', visualFg:'#6b4409',
+    likes:412, comments:1180, shares:290, velocity:'hot',
+    why:'Comment-to-like ratio is nearly 3:1, which almost always signals a genuine local grievance rather than passing interest. Community groups are where reputational issues start before they reach press.',
+    action:'This is the one to watch today. Local, specific, and unanswered. Get the EIA summary into plain language and have it ready — if a journalist picks this up, having it already prepared is the difference between a good and bad story.'
+  },
+  {
+    platform:'Instagram', handle:'@futuretechmy', name:'Future Tech MY', verified:false,
+    avatar:'#7a1734', time:'1d', type:'Reel',
+    caption:'Malaysia is quietly becoming Southeast Asia\'s AI backbone. Here\'s why nobody\'s talking about it 🇲🇾 #SovereignAI #TechMalaysia',
+    visual:'Reel · 45s explainer with motion graphics',
+    visualBg:'#fbe1ea', visualFg:'#7a1734',
+    likes:18900, comments:1420, shares:5600, velocity:'hot',
+    why:'Highest share count in the feed by a wide margin. Explainer Reels about national pride topics travel exceptionally well in this market, and the "nobody\'s talking about it" hook drives forwarding.',
+    action:'Biggest reach opportunity here. This creator is covering your sector favourably with no relationship in place — worth an outreach conversation before a competitor does it first.'
+  }
+
 ];
 
 let currentSocialPost = null;
@@ -3487,6 +3540,136 @@ function spAskAssistant(){
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSocialPost(); });
 
+/* ===== PRESENTATION MODE — a full, believable dataset for demos =====
+   Every item below is FABRICATED for demonstration. Sources are real outlets,
+   the stories are not. A visible banner marks the mode so nobody mistakes it
+   for live coverage. */
+
+const DEMO_NEWS = [
+  // --- Sovereign AI / data centre (YTL's flagship story) ---
+  {a:'theedgemalaysia.com', t:'YTL Power commits additional RM4.2bn to Kulai green data centre expansion', s:'pos', tp:'YTL data centre', tier:true, h:2},
+  {a:'reuters.com', t:'Malaysia data centre capacity to triple by 2028 as YTL, TNB ventures scale up', s:'pos', tp:'Sovereign AI Malaysia', tier:false, h:4},
+  {a:'bernama.com', t:'YTL Green Data Center Park achieves full renewable energy certification', s:'pos', tp:'YTL data centre', tier:true, h:5},
+  {a:'bloomberg.com', t:'Southeast Asia AI infrastructure race intensifies as Malaysian players court hyperscalers', s:'neu', tp:'Sovereign AI Malaysia', tier:false, h:7},
+  {a:'thestar.com.my', t:'Johor data centre boom raises questions over water and grid capacity', s:'neg', tp:'YTL data centre', tier:true, h:9},
+  {a:'nst.com.my', t:'YTL Communications and NVIDIA extend sovereign AI compute partnership', s:'pos', tp:'Sovereign AI Malaysia', tier:true, h:11},
+  {a:'nikkei.com', t:'Japanese chipmakers eye Malaysian AI corridor for regional supply base', s:'pos', tp:'Sovereign AI Malaysia', tier:false, h:14},
+  {a:'malaymail.com', t:'Analysts split on whether Malaysia can absorb planned AI compute capacity', s:'neu', tp:'Sovereign AI Malaysia', tier:true, h:18},
+
+  // --- YTL Power / utilities ---
+  {a:'theedgemalaysia.com', t:'YTL Power Q2 earnings beat estimates on Wessex Water and Singapore contributions', s:'pos', tp:'YTL Power International', tier:true, h:3},
+  {a:'bloomberg.com', t:'YTL Power shares hit 52-week high as investors reprice AI infrastructure exposure', s:'pos', tp:'YTL Power International', tier:false, h:6},
+  {a:'thestar.com.my', t:'PowerSeraya secures long-term LNG supply agreement for Singapore operations', s:'pos', tp:'YTL Power International', tier:true, h:12},
+  {a:'reuters.com', t:'UK regulator opens review into Wessex Water storm overflow performance', s:'neg', tp:'YTL Power International', tier:false, h:16},
+  {a:'thesundaily.my', t:'Ranhill Utilities integration progressing ahead of schedule, says YTL Power', s:'pos', tp:'YTL Power International', tier:true, h:22},
+
+  // --- Group / corporate ---
+  {a:'theedgemalaysia.com', t:'YTL Corp market cap crosses RM75bn as infrastructure rerating continues', s:'pos', tp:'YTL Corporation', tier:true, h:8},
+  {a:'bernama.com', t:'YTL Group announces RM120m community education initiative across three states', s:'pos', tp:'YTL Corporation', tier:true, h:20},
+  {a:'astroawani.com', t:'YTL Corp reiterates 2030 net zero commitment at sustainability briefing', s:'pos', tp:'YTL Corporation', tier:true, h:26},
+  {a:'freemalaysiatoday.com', t:'Opinion: conglomerate structure makes YTL hard to value, say fund managers', s:'neg', tp:'YTL Corporation', tier:true, h:30},
+
+  // --- Cement ---
+  {a:'thestar.com.my', t:'Malayan Cement lifts prices as construction demand outpaces supply', s:'neu', tp:'Malayan Cement', tier:true, h:10},
+  {a:'theedgemalaysia.com', t:'Malayan Cement commissions alternative fuel line, cutting coal reliance 18pc', s:'pos', tp:'Malayan Cement', tier:true, h:24},
+  {a:'nst.com.my', t:'Cement makers face margin squeeze as energy costs climb', s:'neg', tp:'Malayan Cement', tier:true, h:33},
+
+  // --- Telco / digital bank ---
+  {a:'theedgemalaysia.com', t:'Ryt Bank crosses one million customers in first eighteen months', s:'pos', tp:'Yes 4G / Ryt Bank', tier:true, h:13},
+  {a:'malaymail.com', t:'Yes 4G network upgrade targets 95pc population coverage by year-end', s:'pos', tp:'Yes 4G / Ryt Bank', tier:true, h:19},
+  {a:'thesundaily.my', t:'Digital banks under pressure as deposit competition intensifies', s:'neg', tp:'Yes 4G / Ryt Bank', tier:true, h:28},
+
+  // --- Competitors ---
+  {a:'thestar.com.my', t:'Tenaga Nasional unveils RM8bn grid modernisation plan for data centre corridor', s:'pos', tp:'YTL data centre', tier:true, h:5},
+  {a:'theedgemalaysia.com', t:'Gamuda wins RM2.1bn infrastructure package, expands into energy transition works', s:'pos', tp:'YTL Corporation', tier:true, h:15},
+  {a:'nst.com.my', t:'Maxis and CelcomDigi step up enterprise AI offerings as competition sharpens', s:'neu', tp:'Yes 4G / Ryt Bank', tier:true, h:21},
+  {a:'bernama.com', t:'Malakoff reports lower quarterly earnings on plant maintenance costs', s:'neg', tp:'YTL Power International', tier:true, h:27},
+  {a:'thestar.com.my', t:'SP Setia and IOI Properties post stronger sales on township demand', s:'pos', tp:'YTL Corporation', tier:true, h:35},
+
+  // --- Reddit-style discussion ---
+  {a:'r/malaysia', t:'Anyone else notice how much of Johor is becoming data centres? Mixed feelings tbh', s:'neg', tp:'YTL data centre', tier:false, h:6, pf:'Reddit', eng:1840},
+  {a:'r/MalaysianPF', t:'YTL Power vs TNB for long term hold — which one are you backing?', s:'neu', tp:'YTL Power International', tier:false, h:9, pf:'Reddit', eng:920},
+  {a:'r/technology', t:'Malaysia positioning itself as ASEAN AI hub — real strategy or marketing?', s:'neu', tp:'Sovereign AI Malaysia', tier:false, h:17, pf:'Reddit', eng:2310},
+  {a:'r/investing', t:'Underrated infra plays in emerging markets — YTL keeps coming up', s:'pos', tp:'YTL Corporation', tier:false, h:23, pf:'Reddit', eng:640},
+  {a:'r/malaysia', t:'Ryt Bank app actually pretty solid compared to the legacy banks', s:'pos', tp:'Yes 4G / Ryt Bank', tier:false, h:29, pf:'Reddit', eng:1120},
+
+  // --- YouTube ---
+  {a:'CNBC International', t:'Inside Malaysia\u2019s bet on sovereign AI infrastructure', s:'neu', tp:'Sovereign AI Malaysia', tier:false, h:26, pf:'YouTube'},
+  {a:'The Edge TV', t:'YTL Power results breakdown: what the numbers actually say', s:'pos', tp:'YTL Power International', tier:false, h:31, pf:'YouTube'},
+  {a:'BFM 89.9', t:'Energy transition and the data centre dilemma', s:'neu', tp:'YTL data centre', tier:false, h:38, pf:'YouTube'}
+];
+
+/* Build a realistic-looking article URL so links look and behave right */
+function demoUrl(item){
+  const slug = item.t.toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'-').slice(0,60);
+  if(item.pf === 'Reddit') return 'https://reddit.com/' + item.a + '/comments/' + Math.random().toString(36).slice(2,9);
+  if(item.pf === 'YouTube') return 'https://www.youtube.com/watch?v=' + Math.random().toString(36).slice(2,13);
+  return 'https://' + item.a + '/news/' + slug;
+}
+function hoursAgoLabel(h){
+  if(h < 1) return 'just now';
+  if(h < 24) return h + 'h ago';
+  const d = Math.floor(h/24);
+  return d === 1 ? 'yesterday' : d + 'd ago';
+}
+
+let presentationMode = (localStorage.getItem('signal_presentation') === 'on');
+
+function loadDemoData(){
+  DEMO_NEWS.forEach(item=>{
+    const platform = item.pf || 'News';
+    const m = {
+      id: 'demo-' + Math.random().toString(36).slice(2,10),
+      author: item.a,
+      text: item.t,
+      url: demoUrl(item),
+      platform,
+      topic: item.tp,
+      real: true,          // renders as a normal item; the mode banner is what discloses it
+      demo: true,          // internal flag so we can strip it cleanly
+      tier1: !!item.tier,
+      sentiment: item.s,
+      engagement: item.eng || (platform === 'News' ? '—' : Math.floor(Math.random()*400)+40),
+      time: hoursAgoLabel(item.h),
+      ageDays: Math.floor(item.h/24)
+    };
+    m.relevance = relevanceScore(m);
+    allMentions.push(m);
+    seenUrls.add(m.url);
+  });
+  allMentions.sort((a,b)=>(b.relevance||0)-(a.relevance||0));
+  mentionsToday = allMentions.length;
+}
+
+function stripDemoData(){
+  allMentions = allMentions.filter(m=>!m.demo);
+  mentionsToday = allMentions.length;
+}
+
+function setPresentationMode(on){
+  presentationMode = on;
+  try{ localStorage.setItem('signal_presentation', on ? 'on' : 'off'); }catch(e){}
+  if(on){ loadDemoData(); } else { stripDemoData(); }
+  renderPresentationBanner();
+  tick();
+  if(typeof renderMockSocial === 'function') renderMockSocial();
+}
+
+function renderPresentationBanner(){
+  const el = document.getElementById('presentationBanner');
+  if(!el) return;
+  el.innerHTML = presentationMode
+    ? `<div class="pres-banner">
+         <span class="pres-dot"></span>
+         <div style="flex:1;">
+           <strong>Presentation mode is on</strong>
+           <span>The feed is filled with realistic example coverage so you can see the full product working. These stories are illustrative, not live reporting.</span>
+         </div>
+         <button class="pres-off" onclick="document.getElementById('presToggle').checked=false;setPresentationMode(false);">Switch to live only</button>
+       </div>`
+    : '';
+}
+
 /* ===== MAIN LOOP ===== */
 // Demo social posts are OFF by default now — the feed leads with real news/Reddit,
 // not a constant stream of fabricated posts. Toggle in Settings if you want to see
@@ -3543,6 +3726,9 @@ renderNavCounts();
 renderMockSocial();
 maybeShowWelcome();
 document.getElementById('demoModeToggle').checked = demoMode;
+if(presentationMode){ loadDemoData(); }
+renderPresentationBanner();
+const presT = document.getElementById('presToggle'); if(presT) presT.checked = presentationMode;
 if(demoMode){ for(let i=0;i<6;i++) genMention(); }
 tick();
 setInterval(tick, 3500);
