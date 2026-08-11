@@ -274,6 +274,95 @@
   .preview-banner .pb-i{font-size:18px;color:var(--amber);flex-shrink:0;}
   .preview-banner strong{font-size:13px;display:block;margin-bottom:2px;}
   .preview-banner span{font-size:12px;color:var(--text-dim);line-height:1.5;}
+
+  /* ===== THE WALL — dense but plain-spoken ===== */
+  .wall-numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  .wn-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .12s;}
+  .wn-card:hover{border-color:var(--accent);}
+  .wn-card .wn-q{font-size:11px;color:var(--text-dim);margin-bottom:6px;line-height:1.3;}
+  .wn-card .wn-a{font-size:21px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .wn-card .wn-note{font-size:10.5px;color:var(--text-dim2);margin-top:4px;line-height:1.35;}
+  .wn-good .wn-a{color:var(--teal);}
+  .wn-bad .wn-a{color:var(--accent);}
+
+  .wall-grid{display:grid;grid-template-columns:1.15fr 1fr 0.9fr;gap:14px;align-items:start;}
+  .wall-col{display:flex;flex-direction:column;gap:14px;}
+  .wall-panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;}
+  .wp-head{padding:13px 16px 11px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .wp-head h4{font-size:13px;font-weight:700;margin-bottom:2px;}
+  .wp-head .wp-sub{font-size:10.5px;color:var(--text-dim);line-height:1.4;}
+  .wp-body{max-height:340px;overflow-y:auto;}
+  .wp-foot{padding:10px 16px;border-top:1px solid var(--line);font-size:11.5px;font-weight:600;color:var(--accent);cursor:pointer;text-align:center;}
+  .wp-foot:hover{background:var(--accent-dim);}
+
+  .wall-item{padding:11px 16px;border-bottom:1px solid var(--line);cursor:pointer;}
+  .wall-item:last-child{border-bottom:none;}
+  .wall-item:hover{background:var(--surface-2);}
+  .wi-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:4px;}
+  .wi-src{font-size:10.5px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.02em;}
+  .wi-time{font-size:10px;color:var(--text-dim2);flex-shrink:0;}
+  .wi-text{font-size:12.5px;line-height:1.45;margin-bottom:6px;}
+  .wi-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+
+  .wall-topic-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line);cursor:pointer;gap:10px;}
+  .wall-topic-row:last-child{border-bottom:none;}
+  .wall-topic-row:hover{background:var(--surface-2);}
+  .wt-name{font-size:12.5px;font-weight:600;}
+  .wt-bar{flex:1;height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;max-width:70px;}
+  .wt-bar div{height:100%;background:var(--accent);}
+  .wt-count{font-size:11.5px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);min-width:22px;text-align:right;}
+
+  .wall-ask{padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;font-size:12px;margin-bottom:8px;cursor:pointer;font-weight:500;}
+  .wall-ask:last-child{margin-bottom:0;}
+  .wall-ask:hover{border-color:var(--accent);color:var(--accent);}
+
+  .wall-empty{padding:24px 16px;text-align:center;font-size:12px;color:var(--text-dim);line-height:1.5;}
+
+  @media(max-width:1200px){ .wall-grid{grid-template-columns:1fr 1fr;} .wall-col:last-child{grid-column:1/-1;} }
+  @media(max-width:1000px){ .wall-grid{grid-template-columns:1fr;} .wall-col:last-child{grid-column:auto;} .wall-numbers{grid-template-columns:repeat(2,1fr);} }
+
+  .welcome-overlay{position:fixed;inset:0;background:rgba(20,20,40,.5);z-index:80;display:none;align-items:center;justify-content:center;padding:20px;}
+  .welcome-overlay.show{display:flex;}
+  .welcome-box{background:var(--surface);border-radius:16px;max-width:520px;width:100%;box-shadow:0 30px 70px rgba(20,20,40,.3);overflow:hidden;}
+  .wb-head{padding:26px 28px 18px;border-bottom:1px solid var(--line);}
+  .wb-head h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+  .wb-head p{font-size:13px;color:var(--text-dim);line-height:1.55;}
+  .wb-steps{padding:20px 28px;}
+  .wb-step{display:flex;gap:14px;margin-bottom:18px;}
+  .wb-step:last-child{margin-bottom:0;}
+  .wb-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .wb-step strong{display:block;font-size:13.5px;margin-bottom:3px;}
+  .wb-step span{font-size:12.5px;color:var(--text-dim);line-height:1.55;}
+  .wb-foot{padding:18px 28px 24px;display:flex;align-items:center;gap:16px;border-top:1px solid var(--line);}
+  .wb-skip{font-size:12px;color:var(--text-dim2);cursor:pointer;text-decoration:underline;}
+  .wb-skip:hover{color:var(--text-dim);}
+
+  /* ===== COMPETITOR PROFILE POPUP ===== */
+  .comp-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.96);width:600px;max-width:94vw;max-height:88vh;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 70px rgba(20,20,40,0.28);z-index:51;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;display:flex;flex-direction:column;overflow:hidden;}
+  .comp-modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  .cm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:22px 24px 18px;border-bottom:1px solid var(--line);background:var(--surface-2);}
+  .cm-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--text-dim);text-transform:uppercase;display:block;margin-bottom:6px;}
+  .cm-head h2{font-size:21px;font-weight:700;line-height:1.25;}
+  .cm-ytl{font-size:12px;color:var(--text-dim);margin-top:5px;}
+  .cm-body{padding:20px 24px 24px;overflow-y:auto;}
+  .cm-verdict{border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13px;line-height:1.6;}
+  .cm-verdict.ahead{background:var(--accent-dim);border-left:3px solid var(--accent);}
+  .cm-verdict.behind{background:var(--teal-dim);border-left:3px solid var(--teal);}
+  .cm-verdict.level{background:var(--surface-2);border-left:3px solid var(--text-dim2);}
+  .cm-verdict strong{display:block;margin-bottom:3px;font-size:13.5px;}
+  .cm-stats{display:flex;gap:10px;margin-bottom:6px;}
+  .cm-stat{flex:1;background:var(--surface-2);border-radius:9px;padding:12px;text-align:center;}
+  .cm-stat .n{font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;}
+  .cm-stat .l{font-size:9.5px;color:var(--text-dim);text-transform:uppercase;margin-top:3px;letter-spacing:.03em;line-height:1.3;}
+  .cm-news-item{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .cm-news-item:last-child{border-bottom:none;}
+  .cm-news-item:hover{background:var(--surface-2);}
+  .cm-news-item .ci-src{font-size:10.5px;font-weight:700;color:var(--text-dim);text-transform:uppercase;}
+  .cm-news-item .ci-text{font-size:12.5px;line-height:1.45;margin:3px 0 5px;}
+  .cm-seg-chip{display:inline-block;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 12px;font-size:12px;margin:0 6px 6px 0;cursor:pointer;}
+  .cm-seg-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .cm-seg-chip .vs{font-size:10.5px;color:var(--text-dim);display:block;margin-top:2px;}
+  .cm-empty{font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:12px 0;}
   .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 
   .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
@@ -332,6 +421,42 @@
 </head>
 <body>
 
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-box">
+    <div class="wb-head">
+      <h2>Welcome to Signal</h2>
+      <p>It tracks news about YTL and your competitors, then tells you what matters. Three things to know:</p>
+    </div>
+    <div class="wb-steps">
+      <div class="wb-step">
+        <span class="wb-num">1</span>
+        <div>
+          <strong>Colours tell you good from bad</strong>
+          <span>Green means positive coverage. Red means something may need a response. Grey is neutral/FYI.</span>
+        </div>
+      </div>
+      <div class="wb-step">
+        <span class="wb-num">2</span>
+        <div>
+          <strong>Click anything to see more</strong>
+          <span>Every headline, topic and source opens up. There's always a way back — click "Signal" top-left to return here.</span>
+        </div>
+      </div>
+      <div class="wb-step">
+        <span class="wb-num">3</span>
+        <div>
+          <strong>Ask questions in plain English</strong>
+          <span>The button bottom-right answers things like "what should I do today?" — no special wording needed.</span>
+        </div>
+      </div>
+    </div>
+    <div class="wb-foot">
+      <button class="btn-solid" onclick="dismissWelcome()">Got it, let's go</button>
+      <span class="wb-skip" onclick="dismissWelcome()">Don't show again</span>
+    </div>
+  </div>
+</div>
+
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="shell">
   <div class="sidebar">
@@ -340,7 +465,8 @@
       <span class="brand-home">home</span>
     </div>
     <div class="nav-group">Live data</div>
-    <div class="navitem active" data-page="dash"><span class="ic">◆</span>Today<span class="nav-count" id="navCountToday"></span></div>
+    <div class="navitem active" data-page="wall"><span class="ic">▦</span>The Wall<span class="nav-count" id="navCountWall"></span></div>
+    <div class="navitem" data-page="dash"><span class="ic">◆</span>Today<span class="nav-count" id="navCountToday"></span></div>
     <div class="navitem" data-page="grid"><span class="ic">▤</span>Browse &amp; Search<span class="nav-count" id="navCountBrowse"></span></div>
     <div class="navitem" data-page="ytl"><span class="ic">◈</span>Competitors</div>
     <div class="nav-group">Needs a data source</div>
@@ -366,8 +492,91 @@
       </div>
     </div>
 
+    <!-- 0. THE WALL — everything on one screen -->
+    <div class="page active" id="page-wall">
+      <div class="page-title">
+        <div>
+          <h2>The Wall</h2>
+          <p>Everything at once — no clicking around. Each box below answers one question.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="export-btn" onclick="exportDigestExcel()">⭳ Export to Excel</button>
+        </div>
+      </div>
+
+      <div id="wallCrisis"></div>
+
+      <div class="wall-numbers" id="wallNumbers"></div>
+
+      <div class="wall-grid">
+        <div class="wall-col">
+          <div class="wall-panel">
+            <div class="wp-head">
+              <h4>What just came in</h4>
+              <span class="wp-sub">Newest first · updates every minute</span>
+            </div>
+            <div class="wp-body" id="wallFeed"></div>
+            <div class="wp-foot" onclick="clearBrowseContext(true);navigateTo('grid');runSearch();">See everything →</div>
+          </div>
+        </div>
+
+        <div class="wall-col">
+          <div class="wall-panel">
+            <div class="wp-head">
+              <h4>Read these first</h4>
+              <span class="wp-sub">Ranked by how much they matter to us</span>
+            </div>
+            <div class="wp-body" id="wallPriority"></div>
+            <div class="wp-foot" onclick="navigateTo('dash')">Full briefing →</div>
+          </div>
+
+          <div class="wall-panel">
+            <div class="wp-head">
+              <h4>Good news worth sharing</h4>
+              <span class="wp-sub">Positive coverage you could amplify</span>
+            </div>
+            <div class="wp-body" id="wallGood"></div>
+          </div>
+        </div>
+
+        <div class="wall-col">
+          <div class="wall-panel">
+            <div class="wp-head">
+              <h4>What we're tracking</h4>
+              <span class="wp-sub">Click any topic to see its coverage</span>
+            </div>
+            <div class="wp-body" id="wallTopics"></div>
+            <div class="wp-foot" onclick="navigateTo('settings')">Add or change topics →</div>
+          </div>
+
+          <div class="wall-panel">
+            <div class="wp-head">
+              <h4>Where it's coming from</h4>
+              <span class="wp-sub">Which outlets are talking about us</span>
+            </div>
+            <div class="wp-body" id="wallSources"></div>
+          </div>
+
+          <div class="wall-panel">
+            <div class="wp-head">
+              <h4>Ask a question</h4>
+              <span class="wp-sub">Plain English — no special wording needed</span>
+            </div>
+            <div class="wp-body" style="padding:12px 14px;">
+              <div class="wall-ask" onclick="wallAsk('Tell me my day')">What's happening today?</div>
+              <div class="wall-ask" onclick="wallAsk('Top stories worth my time')">What's worth my time?</div>
+              <div class="wall-ask" onclick="wallAsk(&quot;What's next?&quot;)">What should I do next?</div>
+              <div class="wall-ask" onclick="wallAsk('Any negative coverage?')">Is anything bad happening?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nextStepsWall"></div>
+    </div>
+
     <!-- 1. TODAY -->
-    <div class="page active" id="page-dash">
+    <div class="page" id="page-dash">
 
       <div class="page-title">
         <div><h2>Today</h2><p>What people are saying about YTL and your industry, updated continuously.</p></div>
@@ -486,7 +695,12 @@
       </div>
 
       <div class="panel" style="margin-bottom:16px;">
-        <h3>Segment map <span>YTL entity vs competitors — click a row for detail</span></h3>
+        <h3>Jump to a competitor <span>Their profile opens right here — no page change</span></h3>
+        <div id="compQuickList"></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <h3>Segment map <span>Click a competitor for their profile · click a segment row for its coverage</span></h3>
         <table class="topic-table">
           <thead><tr><th>Segment</th><th>YTL entity</th><th>Main competitors</th><th>Activity</th></tr></thead>
           <tbody id="segmentTable"></tbody>
@@ -495,7 +709,7 @@
 
       <div class="grid2">
         <div class="panel">
-          <h3>Competitor activity <span>illustrative volume</span></h3>
+          <h3>Competitor activity <span>Click any name for their full profile</span></h3>
           <div id="rivalList"></div>
           <div class="disclaimer-note">These competitor numbers are placeholders — each rival needs to become a tracked keyword in Settings for this to reflect real coverage.</div>
         </div>
@@ -724,6 +938,33 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="compOverlay" onclick="closeCompetitor()"></div>
+<div class="comp-modal" id="compModal">
+  <div class="cm-head">
+    <div style="flex:1;min-width:0;">
+      <span class="cm-eyebrow" id="cmSegment">—</span>
+      <h2 id="cmName">—</h2>
+      <p class="cm-ytl" id="cmVersus">—</p>
+    </div>
+    <button class="dm-close" onclick="closeCompetitor()">✕</button>
+  </div>
+  <div class="cm-body">
+    <div class="cm-verdict" id="cmVerdict"></div>
+    <div class="cm-stats" id="cmStats"></div>
+    <div class="dm-section-label">What they're in the news for</div>
+    <div id="cmNews"></div>
+    <div class="dm-section-label">Where you compete with them</div>
+    <div id="cmSegments"></div>
+    <div class="dm-actions">
+      <button class="dm-btn primary" onclick="cmAskAssistant()">Ask assistant about them</button>
+      <button class="dm-btn" onclick="cmTrackThem()">Track them as a topic</button>
+    </div>
+    <div class="dm-actions" style="margin-top:8px;">
+      <button class="dm-btn" onclick="cmSeeAll()">See all coverage in Browse</button>
+    </div>
+  </div>
+</div>
+
 <div class="bot-modal-overlay" id="botModalOverlay" onclick="if(botExpanded) toggleExpand()"></div>
 <div class="bot-dock">
   <div class="bot-panel hidden" id="botPanel">
@@ -820,7 +1061,7 @@ function toggleSidebar(){
   document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 /* ===== NAV ===== */
-const PAGE_TITLES = { dash:'Today', grid:'Browse & Search', ytl:'Competitors', trends:'Trends', settings:'Settings' };
+const PAGE_TITLES = { wall:'The Wall', dash:'Today', grid:'Browse & Search', ytl:'Competitors', trends:'Trends', settings:'Settings' };
 
 function navigateTo(page){
   document.querySelectorAll('.navitem').forEach(n=>n.classList.toggle('active', n.dataset.page===page));
@@ -1545,13 +1786,13 @@ function renderYtl(){
     <tr style="cursor:pointer;" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}', 'You clicked this segment from the YTL business map.', 'ytl')" title="See coverage related to this segment">
       <td><strong>${s.seg}</strong></td>
       <td style="font-size:11.5px;color:var(--text-dim);">${s.ytl}</td>
-      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;cursor:pointer;" onclick="event.stopPropagation();goToBrowseWithQuery('${r.replace(/'/g,"")}', '${r.replace(/'/g,"")}', 'Competitor in the ${s.seg.replace(/'/g,"")} segment.', 'ytl')">${r}</span>`).join('')}</td>
+      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;cursor:pointer;" onclick="event.stopPropagation();openCompetitor('${r.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}')">${r}</span>`).join('')}</td>
       <td class="mono">${Math.floor(Math.random()*20)+3}</td>
     </tr>`).join('');
 
   const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
   document.getElementById('rivalList').innerHTML = rivalActivity.map(r=>`
-    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${r.name.replace(/'/g,"")}', '${r.name.replace(/'/g,"")}', 'Tracked competitor in ${r.seg}.', 'ytl')"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
+    <div class="data-row" style="cursor:pointer;" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${r.seg.replace(/'/g,"")}')"><div class="drl"><strong>${r.name}</strong><div class="sub">${r.seg}</div></div><div class="drv">${r.vol}</div></div>`).join('');
 
   const ytlCount = allMentions.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text)).length;
   document.getElementById('ytlMentions').textContent = ytlCount;
@@ -2263,6 +2504,8 @@ function exportDigest(){
 
 /* ===== NAV COUNTS — the sidebar tells you how much is waiting, before you click ===== */
 function renderNavCounts(){
+  const w = document.getElementById('navCountWall');
+  if(w) w.textContent = allMentions.length ? allMentions.length : '';
   const t = document.getElementById('navCountToday');
   const b = document.getElementById('navCountBrowse');
   if(t){
@@ -2276,6 +2519,12 @@ function renderNavCounts(){
 /* ===== NEXT STEPS — every section suggests where to go, so nothing dead-ends ===== */
 function renderNextSteps(){
   const map = {
+    nextStepsWall: [
+      ['Open the full briefing', "navigateTo('dash')"],
+      ['Search all coverage', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
+      ['See how competitors compare', "navigateTo('ytl')"],
+      ['Change what we track', "navigateTo('settings')"]
+    ],
     nextStepsToday: [
       ['See everything collected', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
       ['How do we compare to competitors?', "navigateTo('ytl')"],
@@ -2302,6 +2551,257 @@ function renderNextSteps(){
   });
 }
 
+
+/* ===== THE WALL — one screen, plain language, everything clickable ===== */
+function wallItemHTML(m){
+  const s = strengthOf(m);
+  const tier = m.tier1 ? '<span class="m-tag" style="background:#fde68a;color:#4a3208;">MY TIER 1</span>' : '';
+  return `<div class="wall-item" onclick="openDetail('${m.id}')">
+    <div class="wi-top"><span class="wi-src">${String(m.author).slice(0,26)}</span><span class="wi-time">${m.time||''}</span></div>
+    <div class="wi-text">${(m.text||'').slice(0,120)}${(m.text||'').length>120?'…':''}</div>
+    <div class="wi-tags">${strengthBadge(m)}${tier}</div>
+  </div>`;
+}
+
+function renderWall(){
+  if(!document.getElementById('wallFeed')) return;
+
+  const urgent = allMentions.filter(m=>strengthOf(m).urgent && getCaseStatus(m.id)!=='resolved');
+  const good = allMentions.filter(m=>strengthOf(m).cls==='st-strongpos');
+  const pct = pctPositive(allMentions);
+
+  // --- Numbers, each phrased as the question it answers ---
+  document.getElementById('wallNumbers').innerHTML = `
+    <div class="wn-card ${urgent.length?'wn-bad':'wn-good'}" onclick="navigateTo('dash')">
+      <div class="wn-q">Does anything need a response?</div>
+      <div class="wn-a">${urgent.length ? urgent.length + ' item' + (urgent.length>1?'s':'') : 'Nothing'}</div>
+      <div class="wn-note">${urgent.length ? 'Negative coverage from credible sources' : 'No fires to put out right now'}</div>
+    </div>
+    <div class="wn-card" onclick="clearBrowseContext(true);navigateTo('grid');runSearch();">
+      <div class="wn-q">How much came in?</div>
+      <div class="wn-a">${allMentions.length}</div>
+      <div class="wn-note">Articles and posts we picked up</div>
+    </div>
+    <div class="wn-card ${pct>=60?'wn-good':pct<40?'wn-bad':''}" onclick="wallAsk('Any negative coverage?')">
+      <div class="wn-q">Is coverage good or bad?</div>
+      <div class="wn-a">${pct}% good</div>
+      <div class="wn-note">${pct>=60?'Healthy — mostly positive':pct<40?'Needs attention':'Mixed, worth watching'}</div>
+    </div>
+    <div class="wn-card wn-good" onclick="navigateTo('ytl')">
+      <div class="wn-q">Anything to shout about?</div>
+      <div class="wn-a">${good.length}</div>
+      <div class="wn-note">Strong positive stories you could share</div>
+    </div>`;
+
+  // --- Crisis strip (reuses the same logic as Today) ---
+  const wc = document.getElementById('wallCrisis');
+  if(urgent.length){
+    const top = topByRelevance(urgent,1)[0];
+    wc.innerHTML = `<div class="crisis-banner">
+      <span class="ci">⚠</span>
+      <div style="flex:1;">
+        <h4>${urgent.length} item${urgent.length>1?'s':''} need${urgent.length>1?'':'s'} a response</h4>
+        <p>Top of the list: "${top.text.slice(0,90)}${top.text.length>90?'…':''}" — ${top.author}.</p>
+      </div>
+      <button class="cb-btn" onclick="openDetail('${top.id}')">Open it</button>
+    </div>`;
+  } else {
+    wc.innerHTML = `<div class="allclear-banner"><span class="ai">✓</span><div><strong>Nothing needs a response right now.</strong><span>You're clear across every topic you track.</span></div></div>`;
+  }
+
+  // --- Live feed ---
+  const feed = allMentions.slice(0,12);
+  document.getElementById('wallFeed').innerHTML = feed.length
+    ? feed.map(wallItemHTML).join('')
+    : '<div class="wall-empty">Waiting for the first live pull — this fills in within a minute.</div>';
+
+  // --- Priority ---
+  const prio = topByRelevance(allMentions, 6);
+  document.getElementById('wallPriority').innerHTML = prio.length
+    ? prio.map(wallItemHTML).join('')
+    : '<div class="wall-empty">Nothing ranked yet.</div>';
+
+  // --- Good news ---
+  document.getElementById('wallGood').innerHTML = good.length
+    ? topByRelevance(good,4).map(wallItemHTML).join('')
+    : '<div class="wall-empty">No strongly positive coverage yet today. When it appears, it shows up here so you can share it.</div>';
+
+  // --- Topics with activity bars ---
+  const counts = topics.map(t=>({ name:t.name, n: allMentions.filter(m=>m.topic===t.name).length }));
+  const maxN = Math.max(1, ...counts.map(x=>x.n));
+  document.getElementById('wallTopics').innerHTML = counts.map(t=>`
+    <div class="wall-topic-row" onclick="goToBrowseWithQuery('${t.name.replace(/'/g,"")}', '${t.name.replace(/'/g,"")}', 'A topic you track.', 'wall')">
+      <span class="wt-name">${t.name}</span>
+      <div class="wt-bar"><div style="width:${(t.n/maxN)*100}%"></div></div>
+      <span class="wt-count">${t.n}</span>
+    </div>`).join('');
+
+  // --- Sources ---
+  const srcCounts = {};
+  allMentions.forEach(m=>{ srcCounts[m.author] = (srcCounts[m.author]||0)+1; });
+  const srcs = Object.entries(srcCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxS = Math.max(1, ...srcs.map(s=>s[1]));
+  document.getElementById('wallSources').innerHTML = srcs.length
+    ? srcs.map(([name,n])=>`
+      <div class="wall-topic-row" onclick="goToBrowseWithQuery('${String(name).replace(/'/g,"")}', '${String(name).replace(/'/g,"")}', 'All coverage from this source.', 'wall')">
+        <span class="wt-name">${name}</span>
+        <div class="wt-bar"><div style="width:${(n/maxS)*100}%"></div></div>
+        <span class="wt-count">${n}</span>
+      </div>`).join('')
+    : '<div class="wall-empty">No sources yet.</div>';
+}
+
+function wallAsk(q){
+  document.getElementById('botPanel').classList.remove('hidden');
+  botSendText(q);
+}
+
+
+/* ===== FIRST-RUN WELCOME ===== */
+function dismissWelcome(){
+  document.getElementById('welcomeOverlay').classList.remove('show');
+  try{ localStorage.setItem('signal_welcomed','yes'); }catch(e){}
+}
+function maybeShowWelcome(){
+  try{
+    if(localStorage.getItem('signal_welcomed') !== 'yes'){
+      document.getElementById('welcomeOverlay').classList.add('show');
+    }
+  }catch(e){}
+}
+
+
+/* ===== COMPETITOR PROFILE — everything about one rival, without leaving the page ===== */
+let currentCompetitor = null;
+
+function competitorMentions(name){
+  // match loosely so "Tenaga Nasional (TNB)" also catches "TNB" and "Tenaga"
+  const core = name.replace(/\(.*?\)/g,'').trim();
+  const tokens = core.split(/\s+/).filter(w=>w.length>2);
+  const inBrackets = (name.match(/\((.*?)\)/)||[])[1];
+  if(inBrackets) tokens.push(inBrackets);
+  const re = new RegExp(tokens.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'i');
+  return allMentions.filter(m=>re.test(m.text+' '+m.author+' '+m.topic));
+}
+
+function segmentsFor(name){
+  return ytlSegments.filter(s=>s.rivals.some(r=>r.toLowerCase().includes(name.toLowerCase().split(' ')[0])));
+}
+
+function openCompetitor(name, segHint){
+  currentCompetitor = name;
+  const mentions = competitorMentions(name);
+  const segs = segmentsFor(name);
+  const ytlMentions = allMentions.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text));
+
+  document.getElementById('cmSegment').textContent = segHint || (segs[0]?.seg || 'Competitor');
+  document.getElementById('cmName').textContent = name;
+  document.getElementById('cmVersus').textContent = segs.length
+    ? `Competes with YTL in ${segs.map(s=>s.seg).join(', ')}`
+    : 'Tracked competitor';
+
+  // --- The verdict: what a PR person actually wants to know first ---
+  const theirs = mentions.length;
+  const ours = ytlMentions.length;
+  const theirNeg = mentions.filter(m=>m.sentiment==='neg').length;
+  const theirPos = mentions.filter(m=>m.sentiment==='pos').length;
+  const verdict = document.getElementById('cmVerdict');
+
+  if(theirs === 0){
+    verdict.className = 'cm-verdict level';
+    verdict.innerHTML = `<strong>Quiet right now</strong>Nothing has come through about them in the current feed. Either they're genuinely out of the news, or they're not set up as a tracked topic yet — adding them below would fix that.`;
+  } else if(theirs > ours){
+    verdict.className = 'cm-verdict ahead';
+    verdict.innerHTML = `<strong>They're getting more coverage than us</strong>${theirs} items about them vs ${ours} about YTL. ${theirPos > theirNeg ? 'And it skews positive for them — worth understanding what they\'re doing to earn it.' : 'Though the tone isn\'t all favourable, so volume alone isn\'t the whole story.'}`;
+  } else if(theirs < ours){
+    verdict.className = 'cm-verdict behind';
+    verdict.innerHTML = `<strong>We're ahead on share of voice</strong>${ours} items about YTL vs ${theirs} about them. ${theirNeg > 0 ? `They're also carrying ${theirNeg} negative item${theirNeg>1?'s':''} — a contrast worth noting if you're pitching.` : 'Nothing negative on their side either, so this is a volume lead, not a reputation gap.'}`;
+  } else {
+    verdict.className = 'cm-verdict level';
+    verdict.innerHTML = `<strong>Neck and neck</strong>Both on ${theirs} items. Tone is what separates you here, not volume.`;
+  }
+
+  // --- Stats ---
+  const theirPct = theirs ? Math.round(theirPos/theirs*100) : 0;
+  const share = (theirs+ours) ? Math.round(theirs/(theirs+ours)*100) : 0;
+  document.getElementById('cmStats').innerHTML = `
+    <div class="cm-stat"><div class="n">${theirs}</div><div class="l">Items about them</div></div>
+    <div class="cm-stat"><div class="n">${share}%</div><div class="l">Their share vs us</div></div>
+    <div class="cm-stat"><div class="n">${theirs ? theirPct+'%' : '—'}</div><div class="l">Positive for them</div></div>
+    <div class="cm-stat"><div class="n">${theirNeg}</div><div class="l">Negative items</div></div>`;
+
+  // --- Their news ---
+  const news = topByRelevance(mentions, 5);
+  document.getElementById('cmNews').innerHTML = news.length
+    ? news.map(m=>`<div class="cm-news-item" onclick="closeCompetitor();openDetail('${m.id}')">
+        <div style="flex:1;min-width:0;">
+          <div class="ci-src">${String(m.author).slice(0,30)} · ${m.time||''}</div>
+          <div class="ci-text">${(m.text||'').slice(0,130)}${(m.text||'').length>130?'…':''}</div>
+          <div>${strengthBadge(m)}</div>
+        </div>
+      </div>`).join('')
+    : `<div class="cm-empty">No coverage of them in the feed right now. If you want to monitor them properly, add their name as a tracked topic — the button below does that in one click.</div>`;
+
+  // --- Shared segments ---
+  document.getElementById('cmSegments').innerHTML = segs.length
+    ? segs.map(s=>`<span class="cm-seg-chip" onclick="closeCompetitor();goToBrowseWithQuery('${s.seg.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}', 'Segment where you compete with ${name.replace(/'/g,"")}.', 'ytl')">${s.seg}<span class="vs">YTL: ${s.ytl.split(',')[0]}</span></span>`).join('')
+    : `<div class="cm-empty">Not mapped to a YTL segment yet.</div>`;
+
+  document.getElementById('compOverlay').classList.add('show');
+  document.getElementById('compModal').classList.add('show');
+}
+
+function closeCompetitor(){
+  document.getElementById('compOverlay').classList.remove('show');
+  document.getElementById('compModal').classList.remove('show');
+}
+function cmAskAssistant(){
+  if(!currentCompetitor) return;
+  const name = currentCompetitor;
+  closeCompetitor();
+  document.getElementById('botPanel').classList.remove('hidden');
+  botSendText('How are we doing vs ' + name + '?');
+}
+function cmTrackThem(){
+  if(!currentCompetitor) return;
+  if(topics.some(t=>t.name.toLowerCase() === currentCompetitor.toLowerCase())){
+    alert(currentCompetitor + ' is already a tracked topic.');
+    return;
+  }
+  if(topics.length >= 10){
+    alert('You already track 10 topics — remove one in Settings first.');
+    return;
+  }
+  topics.push({ name: currentCompetitor, count: 0, seg: 'Competitor' });
+  renderTopics();
+  pullRealNews();
+  const name = currentCompetitor;
+  closeCompetitor();
+  alert(name + ' added as a tracked topic. Live news for them will start appearing within a minute.');
+}
+function cmSeeAll(){
+  if(!currentCompetitor) return;
+  const name = currentCompetitor;
+  closeCompetitor();
+  goToBrowseWithQuery(name, name, 'All coverage mentioning this competitor.', 'ytl');
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCompetitor(); });
+
+
+function renderCompQuickList(){
+  const el = document.getElementById('compQuickList');
+  if(!el) return;
+  const seen = new Set();
+  const all = [];
+  ytlSegments.forEach(s=>s.rivals.forEach(r=>{
+    if(!seen.has(r)){ seen.add(r); all.push({name:r, seg:s.seg}); }
+  }));
+  el.innerHTML = all.map(r=>{
+    const n = competitorMentions(r.name).length;
+    return `<span class="cm-seg-chip" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${r.seg.replace(/'/g,"")}')">${r.name}<span class="vs">${n ? n+' item'+(n>1?'s':'')+' in feed' : 'no coverage yet'}</span></span>`;
+  }).join('');
+}
+
 /* ===== MAIN LOOP ===== */
 // Demo social posts are OFF by default now — the feed leads with real news/Reddit,
 // not a constant stream of fabricated posts. Toggle in Settings if you want to see
@@ -2322,6 +2822,8 @@ function tick(){
   renderGrid();
   renderYtl();
   renderCrisisZone();
+  renderWall();
+  renderCompQuickList();
   renderNavCounts();
 }
 
@@ -2351,6 +2853,7 @@ loadSavedIlmu();
 loadYoutubeKey();
 renderNextSteps();
 renderNavCounts();
+maybeShowWelcome();
 document.getElementById('demoModeToggle').checked = demoMode;
 if(demoMode){ for(let i=0;i<6;i++) genMention(); }
 tick();
