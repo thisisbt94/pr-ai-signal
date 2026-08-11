@@ -590,6 +590,8 @@
   .bot-bubble{font-size:12.5px;line-height:1.5;padding:9px 12px;border-radius:10px;max-width:90%;white-space:pre-line;}
   .bot-bubble.bot{background:var(--surface-2);align-self:flex-start;border-top-left-radius:2px;}
   .bot-bubble.user{background:var(--accent-dim);color:var(--accent);align-self:flex-end;border-top-right-radius:2px;font-weight:500;}
+  .bot-link{color:var(--accent);font-weight:700;text-decoration:underline;text-decoration-color:var(--accent-dim);white-space:nowrap;}
+  .bot-link:hover{text-decoration-color:var(--accent);}
   .bot-quick{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;}
   .bot-chip{font-size:11px;padding:5px 11px;border-radius:20px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;color:var(--text-dim);}
   .bot-chip:hover{border-color:var(--accent);color:var(--accent);}
@@ -2216,11 +2218,26 @@ function toggleExpand(){
   document.getElementById('botExpandBtn').title = botExpanded ? 'Smaller view' : 'Bigger view';
 }
 function toggleBot(){ document.getElementById('botPanel').classList.toggle('hidden'); }
+/* ===== LINKIFY — turns any real URL in an assistant answer into a clickable link ===== */
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function linkify(text){
+  const escaped = escapeHtml(text);
+  return escaped.replace(/(https?:\/\/[^\s<]+)/g, url =>
+    `<a href="${url}" target="_blank" rel="noopener" class="bot-link">Open source ↗</a>`
+  );
+}
+
 function botBubble(text, who){
   const body = document.getElementById('botBody');
   const div = document.createElement('div');
   div.className = 'bot-bubble '+who;
-  div.textContent = text;
+  if(who === 'bot'){
+    div.innerHTML = linkify(text); // assistant answers can contain real links
+  } else {
+    div.textContent = text; // user's own typed text never needs to render HTML
+  }
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
 }
@@ -2309,7 +2326,8 @@ function topByRelevance(items,n){
   return items.slice().sort((a,b)=>(b.relevance||0)-(a.relevance||0)).slice(0,n);
 }
 function line(m){
-  return `• ${m.text.slice(0,95)}${m.text.length>95?'…':''}\n   ${m.author} · ${m.platform} · ${strengthOf(m).label} (score ${m.relevance ?? '—'})${m.real?' · live':''}`;
+  const src = (m.real && m.url) ? ` — ${m.url}` : '';
+  return `• ${m.text.slice(0,95)}${m.text.length>95?'…':''}\n   ${m.author} · ${m.platform} · ${strengthOf(m).label} (score ${m.relevance ?? '—'})${m.real?' · live':''}${src}`;
 }
 
 function smartAnswer(q){
@@ -2342,7 +2360,7 @@ function smartAnswer(q){
     const top = topByRelevance(all,4);
     if(!top.length) return 'Nothing has come through yet — give it a moment.';
     return `The ${top.length} stories actually worth your time right now, ranked by how much they matter:\n\n`+
-      top.map((m,i)=>`${i+1}. ${m.text.slice(0,95)}${m.text.length>95?'…':''}\n   ${m.author} · score ${m.relevance} · ${sentLabel(m.sentiment).toLowerCase()}`).join('\n\n')+
+      top.map((m,i)=>`${i+1}. ${m.text.slice(0,95)}${m.text.length>95?'…':''}\n   ${m.author} · score ${m.relevance} · ${sentLabel(m.sentiment).toLowerCase()}${(m.real && m.url) ? ' — '+m.url : ''}`).join('\n\n')+
       `\n\nEverything below these scored lower and can wait.`;
   }
 
@@ -2376,7 +2394,7 @@ function smartAnswer(q){
     else consensus = `Mostly neutral/factual coverage (${neuN} of ${uniqueSources.length} sources) — no strong narrative has formed either way yet.`;
 
     const bySourceLines = topByRelevance(uniqueSources, 5).map(m =>
-      `• ${m.author} (${m.platform}): ${sentLabel(m.sentiment)} — "${m.text.slice(0,80)}${m.text.length>80?'…':''}"`
+      `• ${m.author} (${m.platform}): ${sentLabel(m.sentiment)} — "${m.text.slice(0,80)}${m.text.length>80?'…':''}"${(m.real && m.url) ? ' — '+m.url : ''}`
     ).join('\n');
 
     return `"${topic}" — ${uniqueSources.length} sources covering this:\n\n${bySourceLines}\n\n${consensus}`;
@@ -2448,7 +2466,7 @@ function smartAnswer(q){
   if(p.intent==='real'){
     if(!real.length) return 'No live articles have landed yet — the feed pulls fresh news every 90 seconds, so give it a moment.';
     return `Live news pulled in the last few minutes:\n\n`+
-      real.slice(0,4).map(m=>`• ${m.text.slice(0,90)}${m.text.length>90?'…':''}\n   ${m.author} · ${m.time}`).join('\n\n');
+      real.slice(0,4).map(m=>`• ${m.text.slice(0,90)}${m.text.length>90?'…':''}\n   ${m.author} · ${m.time}${m.url ? ' — '+m.url : ''}`).join('\n\n');
   }
 
   if(p.intent==='history'){
