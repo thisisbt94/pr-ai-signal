@@ -364,30 +364,69 @@
   .cm-seg-chip .vs{font-size:10.5px;color:var(--text-dim);display:block;margin-top:2px;}
   .cm-empty{font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:12px 0;}
 
-  /* ===== NEATER COMPETITOR CARDS ===== */
-  .comp-add-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-  .comp-add-row input{flex:1;min-width:180px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;font-family:inherit;}
-  .comp-add-row input:focus{outline:none;border-color:var(--accent);}
-  .comp-add-row select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12px;font-family:inherit;}
+  /* ===== V6: SEGMENT CARDS + COMPETITOR MANAGEMENT + CONTENT IDEAS ===== */
+  .seg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:20px;}
+  .seg-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:15px 17px;box-shadow:0 1px 3px rgba(20,20,40,.04);}
+  .seg-card:hover{border-color:var(--accent);}
+  .sc-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;}
+  .sc-title{font-size:13.5px;font-weight:700;cursor:pointer;}
+  .sc-title:hover{color:var(--accent);}
+  .sc-count{font-size:10.5px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim2);flex-shrink:0;}
+  .sc-ytl{font-size:11px;color:var(--text-dim);line-height:1.45;margin-bottom:11px;padding-bottom:11px;border-bottom:1px solid var(--line);}
+  .sc-rivals{display:flex;flex-wrap:wrap;gap:5px;}
+  .sc-rival{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;font-weight:500;}
+  .sc-rival:hover{border-color:var(--accent);color:var(--accent);}
+  .sc-rival .n{color:var(--text-dim2);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-left:3px;}
+  .sc-rival.custom{border-style:dashed;}
 
-  .comp-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
-  .comp-card{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:13px 14px;cursor:pointer;transition:border-color .12s,transform .12s;position:relative;}
-  .comp-card:hover{border-color:var(--accent);transform:translateY(-2px);}
-  .comp-card .cc-name{font-size:12.5px;font-weight:700;margin-bottom:3px;line-height:1.3;padding-right:16px;}
-  .comp-card .cc-seg{font-size:10px;color:var(--text-dim2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px;}
-  .comp-card .cc-stat{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);}
-  .comp-card .cc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-  .comp-card .cc-remove{position:absolute;top:8px;right:9px;font-size:11px;color:var(--text-dim2);opacity:0;transition:opacity .12s;}
-  .comp-card:hover .cc-remove{opacity:1;}
-  .comp-card .cc-remove:hover{color:var(--accent);}
-  .comp-card.custom{border-style:dashed;}
+  .comp-add{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .comp-add input{flex:1;min-width:180px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;font-family:inherit;}
+  .comp-add input:focus{outline:none;border-color:var(--accent);}
+  .comp-add select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12.5px;font-family:inherit;}
+  .custom-comp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .custom-comp-row:last-child{border-bottom:none;}
+  .ccr-name{font-size:12.5px;font-weight:600;cursor:pointer;}
+  .ccr-name:hover{color:var(--accent);}
+  .ccr-seg{font-size:10.5px;color:var(--text-dim);}
+  .ccr-remove{background:none;border:none;color:var(--text-dim2);cursor:pointer;font-size:13px;padding:2px 6px;}
+  .ccr-remove:hover{color:var(--accent);}
 
-  /* ===== TIDIER SEGMENT MAP ===== */
-  .seg-row-clean td{vertical-align:middle;}
-  .seg-rivals-count{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim);cursor:pointer;}
-  .seg-rivals-count:hover{color:var(--accent);}
-  .seg-mini-chip{display:inline-block;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10.5px;margin:0 3px 3px 0;cursor:pointer;}
-  .seg-mini-chip:hover{border-color:var(--accent);color:var(--accent);}
+  .kw-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .kw-row:last-child{border-bottom:none;}
+  .kw-row:hover{background:var(--surface-2);}
+  .kw-word{font-size:13px;font-weight:600;flex:1;}
+  .kw-bar{width:70px;height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;}
+  .kw-bar div{height:100%;background:var(--accent);}
+  .kw-n{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);width:22px;text-align:right;}
+
+  .hashtag-cloud{display:flex;flex-wrap:wrap;gap:7px;}
+  .hashtag{background:var(--accent-dim);color:var(--accent);border-radius:20px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;}
+  .hashtag:hover{background:var(--accent);color:#fff;}
+
+  .angle-card{border-left:3px solid var(--teal);background:var(--surface-2);border-radius:0 8px 8px 0;padding:13px 16px;margin-bottom:10px;}
+  .angle-card:last-child{margin-bottom:0;}
+  .ac-source{font-size:10.5px;color:var(--text-dim);text-transform:uppercase;font-weight:700;margin-bottom:4px;}
+  .ac-head{font-size:13px;font-weight:600;line-height:1.45;margin-bottom:7px;}
+  .ac-idea{font-size:12px;color:var(--text-dim);line-height:1.55;}
+  .ac-idea strong{color:var(--text);}
+
+  .avoid-card{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 8px 8px 0;padding:12px 15px;margin-bottom:9px;font-size:12.5px;line-height:1.55;}
+  .avoid-card:last-child{margin-bottom:0;}
+  .avoid-card strong{display:block;margin-bottom:3px;}
+
+  /* ===== REAL TRENDING POSTS ===== */
+  .trend-post{display:flex;gap:14px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;align-items:flex-start;}
+  .trend-post:last-child{border-bottom:none;}
+  .trend-post:hover{background:var(--surface-2);}
+  .tp-rank{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:var(--text-dim2);width:24px;flex-shrink:0;text-align:center;padding-top:2px;}
+  .tp-body{flex:1;min-width:0;}
+  .tp-title{font-size:13px;line-height:1.45;font-weight:500;margin-bottom:6px;}
+  .tp-meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+  .tp-sub{font-size:10.5px;font-weight:700;color:var(--text-dim);text-transform:uppercase;}
+  .tp-stats{flex-shrink:0;text-align:right;min-width:74px;}
+  .tp-eng{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600;color:var(--accent);line-height:1.1;}
+  .tp-eng-l{font-size:9.5px;color:var(--text-dim2);text-transform:uppercase;letter-spacing:.03em;}
+  .tp-vel{font-size:10.5px;color:var(--teal);font-weight:600;margin-top:4px;}
   .bot-dock{position:fixed;bottom:22px;right:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
 
   .noise-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
@@ -720,34 +759,24 @@
         <div class="kpi"><div class="l">Business areas</div><div class="v">7</div><div class="d">utilities to digital</div></div>
       </div>
 
+      <div class="section-head">Who we watch, by business area</div>
+      <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 16px;">Click any competitor for their full profile — it opens here, you don't lose your place.</p>
+
+      <div class="seg-cards" id="segCards"></div>
+
       <div class="panel" style="margin-bottom:16px;">
-        <h3>Your competitors <span>Click any card for their full profile</span></h3>
-        <div class="comp-add-row">
-          <input type="text" id="newCompInput" placeholder="Add a competitor — e.g. Sunway Berhad">
+        <h3>Manage your competitor list <span>Add anyone you want to keep an eye on</span></h3>
+        <div class="comp-add">
+          <input type="text" id="newCompInput" placeholder="Competitor name (e.g. Sunway Group)">
           <select id="newCompSeg"></select>
           <button class="btn-solid" onclick="addCompetitor()">Add</button>
         </div>
-        <div class="comp-card-grid" id="compQuickList"></div>
+        <div id="customCompList"></div>
       </div>
 
       <div class="panel" style="margin-bottom:16px;">
-        <h3>Segment map <span>Click a competitor for their profile · click a segment row for its coverage</span></h3>
-        <table class="topic-table">
-          <thead><tr><th>Segment</th><th>YTL entity</th><th>Main competitors</th><th>Rival coverage</th></tr></thead>
-          <tbody id="segmentTable"></tbody>
-        </table>
-      </div>
-
-      <div class="grid2">
-        <div class="panel">
-          <h3>Competitor activity <span>Click any name for their full profile</span></h3>
-          <div id="rivalList"></div>
-          <div class="disclaimer-note">These competitor numbers are placeholders — each rival needs to become a tracked keyword in Settings for this to reflect real coverage.</div>
-        </div>
-        <div class="panel">
-          <h3>YTL segment coverage split</h3>
-          <div id="segSplitList"></div>
-        </div>
+        <h3>YTL coverage by business area <span>Where our own news is concentrated</span></h3>
+        <div id="segSplitList"></div>
       </div>
       <div class="section-head">Top news stories today</div>
 
@@ -771,28 +800,112 @@
       <div id="nextStepsYtl"></div>
     </div>
 
+    <!-- CONTENT IDEAS — derived from what's actually in the feed -->
+    <div class="page" id="page-ideas">
+      <div class="page-title">
+        <div>
+          <h2>Content Ideas</h2>
+          <p>What to post about this week — worked out from the news actually coming in, not guesswork.</p>
+        </div>
+      </div>
+
+      <div class="context-bar">
+        <span class="cb-icon">✎</span>
+        <div class="cb-body">
+          <h5>How these are worked out</h5>
+          <p>Everything below comes from the real headlines in your feed right now. Words that keep appearing become keywords, positive stories become post angles. This updates as the news does — nothing here is a fixed list.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Words showing up most <span>In real coverage this week</span></h3>
+          <div id="ideaKeywords"></div>
+          <div class="disclaimer-note">Use these in captions and headlines — they're the language the press is already using, so your content matches what people are searching for.</div>
+        </div>
+        <div class="panel">
+          <h3>Hashtags to try <span>Built from those same words</span></h3>
+          <div id="ideaHashtags"></div>
+          <div class="disclaimer-note">Copy any of these. Mix two or three broad ones with one specific to the post.</div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;">
+        <h3>Stories worth posting about <span>Positive coverage you can build on</span></h3>
+        <div id="ideaAngles"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>What to avoid right now <span>Topics carrying negative coverage</span></h3>
+          <div id="ideaAvoid"></div>
+        </div>
+        <div class="panel">
+          <h3>Format guidance <span>General best practice</span></h3>
+          <div id="ideaFormats"></div>
+        </div>
+      </div>
+
+      <div id="nextStepsIdeas"></div>
+    </div>
+
     <!-- 4. TRENDS (AI industry + social trends merged) -->
     <div class="page" id="page-trends">
-      <div class="page-title"><div><h2>Trends</h2><p>What the industry is talking about, and what's working on social right now.</p></div></div>
+      <div class="page-title">
+        <div>
+          <h2>Trends</h2>
+          <p>What's actually getting traction right now — real posts, real numbers.</p>
+        </div>
+        <button class="export-btn" onclick="pullTrending()">↻ Refresh trending</button>
+      </div>
+
+      <div class="context-bar">
+        <span class="cb-icon">↗</span>
+        <div class="cb-body">
+          <h5>Real trending posts <span id="trendStatus" style="font-weight:400;color:var(--text-dim);font-size:11.5px;">loading…</span></h5>
+          <p>These are genuine public posts about your tracked topics, ranked by how many people actually reacted. The "/hr" figure is reactions per hour since posting — the higher it is, the faster it's taking off right now.</p>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:18px;">
+        <h3>Top posts this week <span>Click any to open the original</span></h3>
+        <div id="trendingPostsList"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Words showing up most <span>Pulled from real headlines in your feed</span></h3>
+          <div id="realKeywordList"></div>
+        </div>
+        <div class="panel">
+          <h3>Which topics are heating up <span>Recent activity vs their own average</span></h3>
+          <div id="risingTopicsList"></div>
+        </div>
+      </div>
+
+      <div class="section-head">Not live yet — needs a data source</div>
 
       <div class="preview-banner">
         <span class="pb-i">◐</span>
         <div>
-          <strong>This section is a preview, not live data.</strong>
-          <span>Everything below uses example figures to show the shape of the thing. The industry half can go live for free once the n8n pipeline runs; the social half needs a paid listening tool. Nothing here should be quoted in a report yet.</span>
+          <strong>Everything below this line is example data.</strong>
+          <span>Instagram and Facebook have no free API, so hashtag volumes, format performance and follower growth can't be real without a paid listening tool. Shown so you can see the shape of it — don't quote these numbers.</span>
         </div>
       </div>
 
-      <div class="section-head">What the industry is talking about</div>
-
-      
-      <div class="panel">
-        <h3>How people feel about it</h3>
-        <div id="narrativeList"></div>
+      <div class="grid2">
+        <div class="panel">
+          <h3>Popular hashtags <span style="color:var(--amber);">example only</span></h3>
+          <div id="hashtagList"></div>
+        </div>
+        <div class="panel">
+          <h3>What kind of post works best <span style="color:var(--amber);">example only</span></h3>
+          <div class="chart-wrap"><canvas id="formatChart"></canvas></div>
+        </div>
       </div>
 
       <div class="panel" style="margin-bottom:16px;">
-        <h3>New launches worth knowing about</h3>
+        <h3>Industry moves <span style="color:var(--amber);">example only — can go live free once the pipeline runs</span></h3>
         <table class="topic-table">
           <thead><tr><th>Date</th><th>Company</th><th>Launch</th><th>Category</th></tr></thead>
           <tbody id="launchTable"></tbody>
@@ -801,90 +914,35 @@
 
       <div class="grid2">
         <div class="panel">
-          <h3>Big money moves</h3>
+          <h3>Big money moves <span style="color:var(--amber);">example only</span></h3>
           <div id="fundingList"></div>
         </div>
         <div class="panel">
-          <h3>Rules &amp; policy changes</h3>
+          <h3>Rules &amp; policy changes <span style="color:var(--amber);">example only</span></h3>
           <div id="regList"></div>
         </div>
       </div>
-      <div class="section-head">What's working on social</div>
 
-      <div class="disclaimer-note" style="margin:-6px 0 16px;padding:10px 14px;background:var(--surface);border:1px solid var(--line);border-radius:8px;">
-        Everything below needs a paid listening tool (Instagram/Facebook have no free API) — shown as an example of what it would look like, not real data yet.
-      </div>
-
-      <div class="grid2">
+      <div class="grid2" style="margin-top:16px;">
         <div class="panel">
-          <h3>Popular hashtags right now</h3>
-          <div id="hashtagList"></div>
+          <h3>How people feel about it <span style="color:var(--amber);">example only</span></h3>
+          <div id="narrativeList"></div>
         </div>
         <div class="panel">
-          <h3>What kind of post works best</h3>
-          <div class="chart-wrap"><canvas id="formatChart"></canvas></div>
+          <h3>Who's growing fastest <span style="color:var(--amber);">example only</span></h3>
+          <div id="growthList"></div>
         </div>
       </div>
 
-      <div class="panel" style="margin-bottom:16px;">
-        <h3>Posts taking off fast</h3>
+      <div class="panel" style="margin-top:16px;">
+        <h3>Posts taking off <span style="color:var(--amber);">example only — see real version above</span></h3>
         <table class="topic-table">
           <thead><tr><th>Post</th><th>Platform</th><th>1hr engagement</th><th>Taking off?</th></tr></thead>
           <tbody id="velocityTable"></tbody>
         </table>
       </div>
 
-      <div class="panel">
-        <h3>Who's growing fastest</h3>
-        <div id="growthList"></div>
-      </div>
-    </div>
-
-    <!-- CONTENT IDEAS -->
-    <div class="page" id="page-ideas">
-      <div class="page-title">
-        <div>
-          <h2>Content Ideas</h2>
-          <p>Built from the actual headlines coming in right now — what people are talking about, and what you could post about it.</p>
-        </div>
-      </div>
-
-      <div class="context-bar">
-        <span class="cb-icon">✎</span>
-        <div class="cb-body">
-          <h5>How this works</h5>
-          <p>These aren't generic suggestions. Everything below is pulled from the real news and Reddit posts in your feed — the words that keep appearing, the stories getting the most traction, and where the conversation is going. Use it to decide what to post and which words to use.</p>
-        </div>
-      </div>
-
-      <div class="grid2">
-        <div class="panel">
-          <h3>Words showing up most <span>From real headlines in your feed</span></h3>
-          <div id="ideaKeywords"></div>
-        </div>
-        <div class="panel">
-          <h3>Suggested hashtags <span>Built from those same words</span></h3>
-          <div id="ideaHashtags"></div>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-bottom:16px;">
-        <h3>What you could post about <span>Angles drawn from stories in the feed</span></h3>
-        <div id="ideaAngles"></div>
-      </div>
-
-      <div class="grid2">
-        <div class="panel">
-          <h3>Ride this story <span>Positive coverage worth amplifying</span></h3>
-          <div id="ideaAmplify"></div>
-        </div>
-        <div class="panel">
-          <h3>Handle with care <span>Topics where the conversation is negative</span></h3>
-          <div id="ideaAvoid"></div>
-        </div>
-      </div>
-
-      <div id="nextStepsIdeas"></div>
+      <div id="nextStepsTrends"></div>
     </div>
 
     <!-- 5. SETTINGS (topics + alerts + charts + ILMU merged) -->
@@ -1860,22 +1918,13 @@ const rivalActivity = [
   {name:'Genting Malaysia', seg:'Hospitality', vol:9}
 ];
 function renderYtl(){
-  document.getElementById('segmentTable').innerHTML = ytlSegments.map(s=>{
-    const ytlShort = s.ytl.split(',')[0].trim();
-    const extra = s.ytl.split(',').length - 1;
-    const shown = s.rivals.slice(0,3);
-    const hidden = s.rivals.length - shown.length;
-    return `
-    <tr class="seg-row-clean">
-      <td><strong style="cursor:pointer;" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}', 'Segment from the YTL business map.', 'ytl')">${s.seg}</strong></td>
-      <td style="font-size:11.5px;color:var(--text-dim);">${ytlShort}${extra>0?` <span style="color:var(--text-dim2);">+${extra} more</span>`:''}</td>
-      <td>
-        ${shown.map(r=>`<span class="seg-mini-chip" onclick="openCompetitor('${r.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}')">${r}</span>`).join('')}
-        ${hidden>0?`<span class="seg-rivals-count" onclick="navigateTo('ytl');document.getElementById('compQuickList').scrollIntoView({behavior:'smooth',block:'center'})">+${hidden} more</span>`:''}
-      </td>
-      <td class="mono">${s.rivals.reduce((acc,r)=>acc+competitorMentions(r).length,0)}</td>
-    </tr>`;
-  }).join('');
+  document.getElementById('segmentTable').innerHTML = ytlSegments.map(s=>`
+    <tr style="cursor:pointer;" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}', 'You clicked this segment from the YTL business map.', 'ytl')" title="See coverage related to this segment">
+      <td><strong>${s.seg}</strong></td>
+      <td style="font-size:11.5px;color:var(--text-dim);">${s.ytl}</td>
+      <td>${s.rivals.map(r=>`<span class="m-tag tag-topic" style="margin-right:4px;display:inline-block;margin-bottom:3px;cursor:pointer;" onclick="event.stopPropagation();openCompetitor('${r.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}')">${r}</span>`).join('')}</td>
+      <td class="mono">${Math.floor(Math.random()*20)+3}</td>
+    </tr>`).join('');
 
   const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
   document.getElementById('rivalList').innerHTML = rivalActivity.map(r=>`
@@ -2607,9 +2656,14 @@ function renderNavCounts(){
 function renderNextSteps(){
   const map = {
     nextStepsIdeas: [
-      ['See all coverage these came from', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
+      ['See the coverage these came from', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
       ['Back to the Wall', "goHome()"],
-      ['Ask what to post about', "document.getElementById('botPanel').classList.remove('hidden');botSendText('What should I post about?')"]
+      ['Check competitor activity', "navigateTo('ytl')"]
+    ],
+    nextStepsTrends: [
+      ['Turn these into post ideas', "navigateTo('ideas')"],
+      ['Search all coverage', "clearBrowseContext(true);navigateTo('grid');runSearch();"],
+      ['Back to the Wall', "goHome()"]
     ],
     nextStepsWall: [
       ['Open the full briefing', "navigateTo('dash')"],
@@ -2777,11 +2831,7 @@ function competitorMentions(name){
 }
 
 function segmentsFor(name){
-  const built = ytlSegments.filter(s=>s.rivals.some(r=>r.toLowerCase().includes(name.toLowerCase().split(' ')[0])));
-  if(built.length) return built;
-  const custom = customCompetitors.find(c=>c.name.toLowerCase()===name.toLowerCase());
-  if(custom){ const match = ytlSegments.find(s=>s.seg===custom.seg); if(match) return [match]; }
-  return [];
+  return ytlSegments.filter(s=>s.rivals.some(r=>r.toLowerCase().includes(name.toLowerCase().split(' ')[0])));
 }
 
 function openCompetitor(name, segHint){
@@ -2884,167 +2934,323 @@ function cmSeeAll(){
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeCompetitor(); });
 
 
-/* Custom competitors the user adds — kept in this browser alongside the built-in list */
-let customCompetitors = [];
-try{ customCompetitors = JSON.parse(localStorage.getItem('signal_custom_competitors')||'[]'); }catch(e){ customCompetitors = []; }
-function saveCustomCompetitors(){
-  try{ localStorage.setItem('signal_custom_competitors', JSON.stringify(customCompetitors)); }catch(e){}
+function renderCompQuickList(){
+  const el = document.getElementById('compQuickList');
+  if(!el) return;
+  const seen = new Set();
+  const all = [];
+  ytlSegments.forEach(s=>s.rivals.forEach(r=>{
+    if(!seen.has(r)){ seen.add(r); all.push({name:r, seg:s.seg}); }
+  }));
+  el.innerHTML = all.map(r=>{
+    const n = competitorMentions(r.name).length;
+    return `<span class="cm-seg-chip" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${r.seg.replace(/'/g,"")}')">${r.name}<span class="vs">${n ? n+' item'+(n>1?'s':'')+' in feed' : 'no coverage yet'}</span></span>`;
+  }).join('');
 }
 
+
+/* ===== V6: CUSTOM COMPETITORS (saved in this browser) ===== */
+let customCompetitors = [];
+try{ customCompetitors = JSON.parse(localStorage.getItem('signal_custom_comps')||'[]'); }catch(e){ customCompetitors = []; }
+function saveCustomComps(){ try{ localStorage.setItem('signal_custom_comps', JSON.stringify(customCompetitors)); }catch(e){} }
+
 function allCompetitors(){
-  const seen = new Set();
   const out = [];
+  const seen = new Set();
   ytlSegments.forEach(s=>s.rivals.forEach(r=>{
     if(!seen.has(r.toLowerCase())){ seen.add(r.toLowerCase()); out.push({name:r, seg:s.seg, custom:false}); }
   }));
-  customCompetitors.forEach(cc=>{
-    if(!seen.has(cc.name.toLowerCase())){ seen.add(cc.name.toLowerCase()); out.push({name:cc.name, seg:cc.seg, custom:true}); }
+  customCompetitors.forEach(r=>{
+    if(!seen.has(r.name.toLowerCase())){ seen.add(r.name.toLowerCase()); out.push({...r, custom:true}); }
   });
   return out;
 }
 
 function addCompetitor(){
   const input = document.getElementById('newCompInput');
-  const segSel = document.getElementById('newCompSeg');
+  const sel = document.getElementById('newCompSeg');
   const name = input.value.trim();
   if(!name) return;
-  if(allCompetitors().some(x=>x.name.toLowerCase()===name.toLowerCase())){
-    alert(name + ' is already in your competitor list.');
+  if(allCompetitors().some(r=>r.name.toLowerCase()===name.toLowerCase())){
+    alert(name + ' is already on your list.');
     return;
   }
-  customCompetitors.push({ name, seg: segSel.value || 'Other' });
-  saveCustomCompetitors();
+  customCompetitors.push({ name, seg: sel.value });
+  saveCustomComps();
   input.value = '';
-  renderCompQuickList();
+  renderSegCards();
+  renderCustomComps();
+}
+function removeCompetitor(name){
+  customCompetitors = customCompetitors.filter(r=>r.name !== name);
+  saveCustomComps();
+  renderSegCards();
+  renderCustomComps();
 }
 
-function removeCompetitor(name, ev){
-  if(ev) ev.stopPropagation();
-  customCompetitors = customCompetitors.filter(c=>c.name !== name);
-  saveCustomCompetitors();
-  renderCompQuickList();
-}
-
-function renderCompQuickList(){
-  const el = document.getElementById('compQuickList');
+function renderCustomComps(){
+  const el = document.getElementById('customCompList');
   if(!el) return;
-
   // populate the segment dropdown once
-  const segSel = document.getElementById('newCompSeg');
-  if(segSel && !segSel.options.length){
-    segSel.innerHTML = ytlSegments.map(s=>`<option value="${s.seg}">${s.seg}</option>`).join('') + '<option value="Other">Other</option>';
+  const sel = document.getElementById('newCompSeg');
+  if(sel && !sel.options.length){
+    sel.innerHTML = ytlSegments.map(s=>`<option>${s.seg}</option>`).join('') + '<option>Other</option>';
   }
-
-  const list = allCompetitors().map(r=>({ ...r, n: competitorMentions(r.name).length }))
-    .sort((a,b)=>b.n - a.n);
-
-  el.innerHTML = list.map(r=>{
-    const dot = r.n === 0 ? 'var(--text-dim2)' : r.n >= 5 ? 'var(--accent)' : 'var(--amber)';
-    const label = r.n === 0 ? 'No coverage yet' : `${r.n} item${r.n>1?'s':''} in feed`;
-    return `<div class="comp-card ${r.custom?'custom':''}" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${r.seg.replace(/'/g,"")}')">
-      ${r.custom ? `<span class="cc-remove" onclick="removeCompetitor('${r.name.replace(/'/g,"")}', event)" title="Remove">✕</span>` : ''}
-      <div class="cc-name">${r.name}</div>
-      <div class="cc-seg">${r.seg}</div>
-      <div class="cc-stat"><span class="cc-dot" style="background:${dot};"></span>${label}</div>
-    </div>`;
-  }).join('');
+  el.innerHTML = customCompetitors.length
+    ? customCompetitors.map(r=>`
+      <div class="custom-comp-row">
+        <div>
+          <div class="ccr-name" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${r.seg.replace(/'/g,"")}')">${r.name}</div>
+          <div class="ccr-seg">${r.seg} · ${competitorMentions(r.name).length} items in feed</div>
+        </div>
+        <button class="ccr-remove" onclick="removeCompetitor('${r.name.replace(/'/g,"")}')" title="Remove">✕</button>
+      </div>`).join('')
+    : '<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">No competitors added yet — the built-in list above covers YTL\'s main rivals. Add anyone else you want to watch.</div>';
 }
 
+function renderSegCards(){
+  const el = document.getElementById('segCards');
+  if(!el) return;
+  const customBySeg = {};
+  customCompetitors.forEach(r=>{ (customBySeg[r.seg] = customBySeg[r.seg]||[]).push(r.name); });
 
-/* ===== CONTENT IDEAS — derived from REAL headlines in the feed, not templates ===== */
-const IDEA_STOPWORDS = new Set(['the','and','for','with','from','that','this','are','was','has','have','will','its','their','they','you','your','our','not','but','all','can','more','than','into','over','after','before','about','said','says','new','one','two','how','why','what','when','who','which','been','were','also','may','could','would','should','amid','under','while','being','just','out','off','per','via','set','get','make','made','take','still','now','yet','some','any','his','her','him','she','had','did','does','off','then','there','here','only','most','much','many','such','last','next','first','year','years','week','month','day','days','today','report','reports','update','news']);
+  const cards = ytlSegments.map(s=>{
+    const rivals = [...s.rivals.map(r=>({name:r, custom:false})), ...(customBySeg[s.seg]||[]).map(n=>({name:n, custom:true}))];
+    const segMentions = rivals.reduce((sum,r)=>sum + competitorMentions(r.name).length, 0);
+    return `<div class="seg-card">
+      <div class="sc-head">
+        <span class="sc-title" onclick="goToBrowseWithQuery('${s.seg.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}', 'Business area from the competitor map.', 'ytl')">${s.seg}</span>
+        <span class="sc-count">${segMentions} in feed</span>
+      </div>
+      <div class="sc-ytl"><strong style="color:var(--text);">YTL:</strong> ${s.ytl}</div>
+      <div class="sc-rivals">${rivals.map(r=>{
+        const n = competitorMentions(r.name).length;
+        return `<span class="sc-rival ${r.custom?'custom':''}" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}')">${r.name}${n?`<span class="n">${n}</span>`:''}</span>`;
+      }).join('')}</div>
+    </div>`;
+  });
 
-function extractKeywords(items, limit){
+  // any custom competitors filed under "Other"
+  const others = (customBySeg['Other']||[]);
+  if(others.length){
+    cards.push(`<div class="seg-card">
+      <div class="sc-head"><span class="sc-title">Other watchlist</span><span class="sc-count">${others.reduce((s,n)=>s+competitorMentions(n).length,0)} in feed</span></div>
+      <div class="sc-ytl">Competitors you added that don't map to a YTL business area.</div>
+      <div class="sc-rivals">${others.map(n=>{
+        const cnt = competitorMentions(n).length;
+        return `<span class="sc-rival custom" onclick="openCompetitor('${n.replace(/'/g,"")}', 'Other')">${n}${cnt?`<span class="n">${cnt}</span>`:''}</span>`;
+      }).join('')}</div>
+    </div>`);
+  }
+  el.innerHTML = cards.join('');
+}
+
+/* ===== V6: CONTENT IDEAS — derived from real headlines in the feed ===== */
+const IDEA_STOPWORDS = new Set(['the','and','for','with','that','this','from','have','has','was','are','its','their','they','will','been','more','than','into','over','after','about','said','says','new','says','also','but','not','can','may','one','two','out','who','how','why','what','when','where','which','were','been','being','all','any','our','your','his','her','him','she','them','then','there','these','those','some','such','only','other','just','like','get','got','make','made','take','see','way','use','used','using','per','via','amid','set','sets','among','across','plans','plan','year','years','week','month','day','days','first','last','next','top','big','high','low','best','back','still','now','yet','off','down','under','between','during','while','after','before','since','until','because','though','although','however','including','include','includes']);
+
+function extractKeywords(){
   const counts = {};
-  items.forEach(m=>{
-    const words = String(m.text||'').toLowerCase().replace(/[^a-z0-9\s-]/g,' ').split(/\s+/);
-    const seenInItem = new Set();
-    words.forEach(w=>{
-      if(w.length < 4) return;
-      if(IDEA_STOPWORDS.has(w)) return;
-      if(/^\d+$/.test(w)) return;
-      if(seenInItem.has(w)) return; // count each word once per article, so one story can't dominate
-      seenInItem.add(w);
+  allMentions.filter(m=>m.real).forEach(m=>{
+    (m.text||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).forEach(w=>{
+      if(w.length < 4 || IDEA_STOPWORDS.has(w) || /^\d+$/.test(w)) return;
       counts[w] = (counts[w]||0) + 1;
     });
   });
-  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0, limit||12);
+  return Object.entries(counts).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]).slice(0,10);
 }
 
 function toHashtag(word){
-  return '#' + word.split(/[-\s]/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join('');
+  return '#' + word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-function renderIdeas(){
+function renderContentIdeas(){
   if(!document.getElementById('ideaKeywords')) return;
-  const real = allMentions.filter(m=>m.real);
-  const pool = real.length ? real : allMentions;
+  const kws = extractKeywords();
+  const maxN = kws.length ? kws[0][1] : 1;
 
-  if(!pool.length){
-    ['ideaKeywords','ideaHashtags','ideaAngles','ideaAmplify','ideaAvoid'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.innerHTML = '<div class="cm-empty">Waiting for the first live news pull — ideas appear once there are real headlines to work from.</div>';
+  // Keywords
+  document.getElementById('ideaKeywords').innerHTML = kws.length
+    ? kws.map(([w,n])=>`
+      <div class="kw-row" onclick="goToBrowseWithQuery('${w}', '${w}', 'A word appearing often in current coverage.', 'ideas')">
+        <span class="kw-word">${w}</span>
+        <div class="kw-bar"><div style="width:${(n/maxN)*100}%"></div></div>
+        <span class="kw-n">${n}</span>
+      </div>`).join('')
+    : '<div style="font-size:12.5px;color:var(--text-dim);padding:12px 0;line-height:1.6;">Not enough live coverage yet to spot repeated words. This fills in once more news comes through — usually within a few minutes of the page being open.</div>';
+
+  // Hashtags — combine real keywords with a few always-relevant brand ones
+  const base = kws.slice(0,6).map(([w])=>toHashtag(w));
+  const evergreen = ['#YTL','#MalaysiaBusiness','#SustainableInfrastructure'];
+  const tags = [...new Set([...base, ...evergreen])];
+  document.getElementById('ideaHashtags').innerHTML = tags.length
+    ? `<div class="hashtag-cloud">${tags.map(t=>`<span class="hashtag" onclick="copyTag('${t}')" title="Click to copy">${t}</span>`).join('')}</div>`
+    : '<div style="font-size:12.5px;color:var(--text-dim);">Waiting on more coverage.</div>';
+
+  // Post angles from genuinely positive real stories
+  const positives = allMentions.filter(m=>m.real && m.sentiment==='pos');
+  const angles = topByRelevance(positives, 4);
+  document.getElementById('ideaAngles').innerHTML = angles.length
+    ? angles.map(m=>`
+      <div class="angle-card">
+        <div class="ac-source">${m.author} · ${m.time||''}</div>
+        <div class="ac-head">${(m.text||'').slice(0,140)}${(m.text||'').length>140?'…':''}</div>
+        <div class="ac-idea"><strong>Angle:</strong> share this coverage with a short comment on what it means for the business. Third-party press carries more weight than saying it yourself — quote the outlet, don't just restate the news. <span style="cursor:pointer;color:var(--accent);text-decoration:underline;" onclick="openDetail('${m.id}')">Open the story</span></div>
+      </div>`).join('')
+    : '<div style="font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:8px 0;">No clearly positive coverage in the feed right now. When a good story lands, it appears here with a suggested angle. In the meantime, evergreen content (people, process, milestones) is the safer bet.</div>';
+
+  // What to avoid
+  const negTopics = {};
+  allMentions.filter(m=>m.real && m.sentiment==='neg').forEach(m=>{ negTopics[m.topic] = (negTopics[m.topic]||0)+1; });
+  const avoid = Object.entries(negTopics).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  document.getElementById('ideaAvoid').innerHTML = avoid.length
+    ? avoid.map(([t,n])=>`<div class="avoid-card"><strong>${t}</strong>${n} negative item${n>1?'s':''} in circulation. Posting promotional content on this topic right now risks looking tone-deaf — wait for the coverage to settle, or address it directly rather than posting around it.</div>`).join('')
+    : '<div style="font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:8px 0;">Nothing to steer clear of — no negative coverage on any tracked topic right now. Clear runway for whatever you want to publish.</div>';
+
+  // Format guidance
+  document.getElementById('ideaFormats').innerHTML = `
+    <div class="data-row"><div class="drl"><strong>Short video / Reels</strong><div class="sub">Highest reach on Instagram and Facebook</div></div><div class="drv">Best</div></div>
+    <div class="data-row"><div class="drl"><strong>Carousel posts</strong><div class="sub">Good for explaining something with several steps</div></div><div class="drv">Strong</div></div>
+    <div class="data-row"><div class="drl"><strong>Single image + caption</strong><div class="sub">Reliable but rarely breaks out</div></div><div class="drv">OK</div></div>
+    <div class="data-row"><div class="drl"><strong>Link posts</strong><div class="sub">Platforms suppress these — put the link in comments instead</div></div><div class="drv">Weak</div></div>
+    <div class="disclaimer-note">General platform best practice, not measured from your accounts — connecting a social listening tool would make this specific to YTL.</div>`;
+}
+
+function copyTag(tag){
+  navigator.clipboard?.writeText(tag);
+  const els = document.querySelectorAll('.hashtag');
+  els.forEach(e=>{ if(e.textContent===tag){ const o=e.textContent; e.textContent='copied!'; setTimeout(()=>e.textContent=o, 900); } });
+}
+
+
+/* ===== REAL TRENDING POSTS — Reddit sorted by actual engagement, not invented numbers ===== */
+let trendingPosts = [];
+let trendingLastPull = null;
+
+async function fetchTrendingFor(topic){
+  try{
+    // sort=top, t=week gives genuinely most-engaged posts, not just newest
+    const url = `https://www.reddit.com/search.json?q=${encodeURIComponent(topic)}&sort=top&limit=8&t=week`;
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return (data.data?.children||[]).map(ch=>{
+      const d = ch.data;
+      const ups = d.ups||0, comments = d.num_comments||0;
+      const ageHrs = d.created_utc ? Math.max(1,(Date.now()/1000 - d.created_utc)/3600) : 24;
+      return {
+        title: d.title,
+        sub: 'r/'+d.subreddit,
+        url: 'https://reddit.com'+d.permalink,
+        ups, comments,
+        engagement: ups + comments,
+        velocity: Math.round((ups + comments) / ageHrs), // engagement per hour = real "taking off" signal
+        ageHrs: Math.round(ageHrs),
+        topic,
+        sentiment: quickSentiment(d.title||'')
+      };
     });
+  }catch(e){ return []; }
+}
+
+async function pullTrending(){
+  const status = document.getElementById('trendStatus');
+  if(status) status.textContent = 'checking what\'s trending…';
+  const results = [];
+  const seen = new Set();
+  for(const t of topics.slice(0,6)){
+    const posts = await fetchTrendingFor(t.name);
+    posts.forEach(p=>{ if(!seen.has(p.url)){ seen.add(p.url); results.push(p); } });
+  }
+  trendingPosts = results.sort((a,b)=>b.engagement-a.engagement);
+  trendingLastPull = new Date();
+  if(status){
+    status.textContent = trendingPosts.length
+      ? `${trendingPosts.length} real posts found · updated ${trendingLastPull.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`
+      : 'no trending posts found — Reddit may be blocking the request from this network';
+  }
+  renderTrendingReal();
+}
+
+function renderTrendingReal(){
+  const el = document.getElementById('trendingPostsList');
+  if(!el) return;
+  if(!trendingPosts.length){
+    el.innerHTML = `<div class="wall-empty">No trending posts pulled yet. This uses Reddit's public API — if nothing appears after a minute, your network may be blocking it (some corporate networks do). News trending below still works regardless.</div>`;
     return;
   }
-
-  // --- Keywords, with how often each appears ---
-  const kws = extractKeywords(pool, 12);
-  const maxK = kws.length ? kws[0][1] : 1;
-  document.getElementById('ideaKeywords').innerHTML = kws.map(([w,n])=>`
-    <div class="wall-topic-row" onclick="goToBrowseWithQuery('${w}', '${w}', 'A word appearing often in current coverage.', 'ideas')">
-      <span class="wt-name">${w}</span>
-      <div class="wt-bar"><div style="width:${(n/maxK)*100}%"></div></div>
-      <span class="wt-count">${n}</span>
-    </div>`).join('');
-
-  // --- Hashtags from the top keywords + your tracked topics ---
-  const tagWords = kws.slice(0,8).map(k=>k[0]);
-  const topicTags = topics.slice(0,4).map(t=>t.name.replace(/[^a-zA-Z0-9\s]/g,'').trim());
-  const tags = [...new Set([...topicTags.map(toHashtag), ...tagWords.map(toHashtag)])].slice(0,14);
-  document.getElementById('ideaHashtags').innerHTML =
-    `<div style="display:flex;flex-wrap:wrap;gap:7px;">` +
-    tags.map(t=>`<span class="seg-mini-chip" style="font-size:11.5px;padding:5px 10px;" onclick="navigator.clipboard && navigator.clipboard.writeText('${t}'); this.textContent='copied';setTimeout(()=>this.textContent='${t}',900);" title="Click to copy">${t}</span>`).join('') +
-    `</div><div class="disclaimer-note" style="margin-top:12px;">Click any tag to copy it. These come from words actually appearing in current coverage — check each one on the platform before using it, since a term can trend for reasons unrelated to you.</div>`;
-
-  // --- Angles: real stories reframed as things you could post about ---
-  const topStories = topByRelevance(pool, 5);
-  document.getElementById('ideaAngles').innerHTML = topStories.map(m=>{
-    const s = strengthOf(m);
-    let angle;
-    if(s.cls === 'st-strongpos') angle = 'Share this directly, or post a short reaction adding YTL\'s perspective on why it matters for the region.';
-    else if(s.urgent) angle = 'Don\'t lead with this. If asked, have a prepared line ready rather than posting proactively.';
-    else if(m.sentiment === 'neg') angle = 'Low risk, but avoid amplifying. Consider a positive counter-story on the same theme instead.';
-    else angle = 'Useful context piece — you could post an explainer taking a position on this while it\'s topical.';
-    return `<div class="data-row" style="cursor:pointer;align-items:flex-start;" onclick="openDetail('${m.id}')">
-      <div class="drl" style="flex:1;">
-        <strong>${(m.text||'').slice(0,95)}${(m.text||'').length>95?'…':''}</strong>
-        <div class="sub" style="margin-top:5px;line-height:1.5;">${angle}</div>
-        <div style="margin-top:6px;">${strengthBadge(m)}</div>
+  el.innerHTML = trendingPosts.slice(0,10).map((p,i)=>`
+    <div class="trend-post" onclick="window.open('${p.url}','_blank')">
+      <div class="tp-rank">${i+1}</div>
+      <div class="tp-body">
+        <div class="tp-title">${p.title.slice(0,140)}${p.title.length>140?'…':''}</div>
+        <div class="tp-meta">
+          <span class="tp-sub">${p.sub}</span>
+          <span class="m-tag ${sentClass(p.sentiment)}">${sentLabel(p.sentiment)}</span>
+          <span class="m-tag tag-topic">${p.topic}</span>
+        </div>
       </div>
-    </div>`;
-  }).join('');
+      <div class="tp-stats">
+        <div class="tp-eng">${p.engagement.toLocaleString()}</div>
+        <div class="tp-eng-l">reactions</div>
+        <div class="tp-vel">${p.velocity}/hr</div>
+      </div>
+    </div>`).join('');
+}
 
-  // --- Amplify ---
-  const good = pool.filter(m=>strengthOf(m).cls==='st-strongpos' || (m.sentiment==='pos' && (m.relevance||0)>=55));
-  document.getElementById('ideaAmplify').innerHTML = good.length
-    ? topByRelevance(good,4).map(m=>`
-      <div class="data-row" style="cursor:pointer;" onclick="openDetail('${m.id}')">
-        <div class="drl"><strong>${(m.text||'').slice(0,70)}${(m.text||'').length>70?'…':''}</strong><div class="sub">${m.author}</div></div>
-      </div>`).join('')
-    : '<div class="cm-empty">No strongly positive stories in the feed right now. When one lands, it appears here as something to share.</div>';
+/* ===== REAL KEYWORD TRENDS — derived from actual headlines in the feed ===== */
+const KEYWORD_STOP = new Set(['the','and','for','with','that','this','from','have','has','was','are','its','their','they','will','would','could','been','more','than','into','after','over','about','said','says','new','you','your','our','out','not','but','all','how','why','what','when','who','which','were','can','may','also','one','two','amid','says','say','set','get','make','made','take','see','now','use','used','using','via','per','off','still','just','like','back','down','last','next','year','years','week','month','day','days']);
 
-  // --- Avoid / handle with care ---
-  const negTopics = {};
-  pool.filter(m=>m.sentiment==='neg').forEach(m=>{ negTopics[m.topic] = (negTopics[m.topic]||0)+1; });
-  const negList = Object.entries(negTopics).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('ideaAvoid').innerHTML = negList.length
-    ? negList.map(([t,n])=>`
-      <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${t.replace(/'/g,"")}', '${t.replace(/'/g,"")}', 'Topic carrying negative coverage.', 'ideas')">
-        <div class="drl"><strong>${t}</strong><div class="sub">${n} negative item${n>1?'s':''} — post carefully on this theme</div></div>
-        <div class="drv">${n}</div>
-      </div>`).join('')
-    : '<div class="cm-empty">Nothing negative in the feed — no topics to steer around right now.</div>';
+function realKeywordTrends(){
+  const counts = {};
+  allMentions.forEach(m=>{
+    const words = (m.text||'').toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/);
+    words.forEach(w=>{
+      if(w.length < 4 || KEYWORD_STOP.has(w)) return;
+      counts[w] = (counts[w]||0) + 1;
+    });
+  });
+  return Object.entries(counts)
+    .filter(([w,n])=>n >= 2)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,12);
+}
+
+function renderKeywordTrends(){
+  const el = document.getElementById('realKeywordList');
+  if(!el) return;
+  const kws = realKeywordTrends();
+  if(!kws.length){
+    el.innerHTML = `<div class="wall-empty">Not enough coverage yet to spot repeated words. This fills in as more articles come through.</div>`;
+    return;
+  }
+  const max = kws[0][1];
+  el.innerHTML = kws.map(([w,n])=>`
+    <div class="wall-topic-row" onclick="goToBrowseWithQuery('${w}', '${w}', 'A word appearing repeatedly across current coverage.', 'trends')">
+      <span class="wt-name">${w}</span>
+      <div class="wt-bar"><div style="width:${(n/max)*100}%"></div></div>
+      <span class="wt-count">${n}×</span>
+    </div>`).join('');
+}
+
+/* ===== RISING TOPICS — which of your tracked topics is heating up ===== */
+function renderRisingTopics(){
+  const el = document.getElementById('risingTopicsList');
+  if(!el) return;
+  const rows = topics.map(t=>{
+    const items = allMentions.filter(m=>m.topic===t.name);
+    const recent = items.filter(m=>stampAge(m) < 2).length;
+    const older = items.filter(m=>stampAge(m) >= 2 && stampAge(m) < 14).length;
+    const rate = older ? Math.round(((recent*7) / older - 1) * 100) : (recent ? 100 : 0);
+    return { name:t.name, total:items.length, recent, rate };
+  }).sort((a,b)=>b.rate-a.rate);
+
+  el.innerHTML = rows.map(r=>`
+    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${r.name.replace(/'/g,"")}', '${r.name.replace(/'/g,"")}', 'Checking momentum on this topic.', 'trends')">
+      <div class="drl"><strong>${r.name}</strong><div class="sub">${r.total} items tracked · ${r.recent} in the last 2 days</div></div>
+      <div class="drv" style="color:${r.rate>20?'var(--teal)':r.rate<-20?'var(--accent)':'var(--text-dim)'};">
+        ${r.rate>0?'▲ ':r.rate<0?'▼ ':''}${Math.abs(r.rate)}%
+      </div>
+    </div>`).join('');
 }
 
 /* ===== MAIN LOOP ===== */
@@ -3068,8 +3274,9 @@ function tick(){
   renderYtl();
   renderCrisisZone();
   renderWall();
-  renderCompQuickList();
-  renderIdeas();
+  renderSegCards();
+  renderCustomComps();
+  renderContentIdeas();
   renderNavCounts();
 }
 
@@ -3105,7 +3312,9 @@ if(demoMode){ for(let i=0;i<6;i++) genMention(); }
 tick();
 setInterval(tick, 3500);
 pullRealNews();
-setInterval(pullRealNews, 60000); // every minute — the closest to "live" a free stack can honestly do
+setInterval(pullRealNews, 60000);
+pullTrending();
+setInterval(pullTrending, 300000); // every minute — the closest to "live" a free stack can honestly do
 </script>
 
 </body>
