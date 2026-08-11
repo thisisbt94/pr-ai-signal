@@ -507,6 +507,20 @@
   .wq-quick{flex-shrink:0;background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:11px;font-weight:700;color:var(--teal);cursor:pointer;align-self:center;}
   .wq-quick:hover{background:var(--teal-dim);border-color:var(--teal);}
 
+  .apikey-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .apikey-add-row select{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12.5px;font-family:inherit;flex:1;min-width:200px;}
+  .apikey-add-row input{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;font-family:inherit;flex:1;min-width:160px;}
+  .apikey-add-row input:focus, .apikey-add-row select:focus{outline:none;border-color:var(--accent);}
+  .apikey-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .apikey-row:last-child{border-bottom:none;}
+  .apikey-name{font-size:12.5px;font-weight:600;}
+  .apikey-meta{font-size:11px;color:var(--text-dim);margin-top:2px;}
+  .apikey-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-dim2);}
+  .apikey-remove{background:none;border:none;color:var(--text-dim2);cursor:pointer;font-size:13px;flex-shrink:0;}
+  .apikey-remove:hover{color:var(--accent);}
+  .apikey-tag{font-size:9px;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:20px;font-weight:700;flex-shrink:0;}
+  .apikey-tag.live{background:var(--teal-dim);color:var(--teal);}
+  .apikey-tag.saved{background:var(--surface-3);color:var(--text-dim);}
   .wt-add-row{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);}
   .wt-add-row input{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:12px;font-family:inherit;}
   .wt-add-row input:focus{outline:none;border-color:var(--accent);}
@@ -1056,17 +1070,24 @@
       <div class="section-head">Live data sources</div>
       <div class="panel" style="margin-bottom:20px;">
         <p style="font-size:12.5px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;">
-          News (global + Tier 1 Malaysian outlets: The Star, NST, Bernama, The Edge, Malay Mail, and more) and Reddit are already live — no setup needed. YouTube needs a free API key
-          (from <a href="https://console.cloud.google.com/" target="_blank" style="color:var(--accent);">Google Cloud Console</a>, no cost) if you want video coverage too.
-          Instagram/Facebook/X have no free path — see the DEMO toggle below for what that would look like.
+          News (global + Tier 1 Malaysian outlets: The Star, NST, Bernama, The Edge, Malay Mail, and more) and Reddit are already live — no setup needed.
+          Add as many API keys below as you want — there's no limit. Three are wired up to actually pull real coverage the moment you add a key (YouTube, NewsAPI.org, GNews.io);
+          anything else gets saved for when you're ready to wire it in. Instagram/Facebook/X have no free path — see the DEMO toggle below for what that would look like.
         </p>
-        <div class="field-row" style="flex-direction:column;align-items:stretch;gap:10px;">
-          <input type="text" id="youtubeKeyInput" placeholder="YouTube Data API key (optional, free)" style="width:100%;">
-          <div style="display:flex;gap:10px;align-items:center;">
-            <button class="btn-solid" onclick="saveYoutubeKey()">Save key</button>
-            <span id="youtubeKeyStatus" style="font-size:11.5px;color:var(--text-dim);">No key saved — YouTube results are skipped</span>
-          </div>
+
+        <div class="apikey-add-row">
+          <select id="apiKeySource">
+            <option value="youtube">YouTube Data API — live now once added</option>
+            <option value="newsapi">NewsAPI.org — live now once added</option>
+            <option value="gnews">GNews.io — live now once added</option>
+            <option value="custom">Other / custom — saved, not wired yet</option>
+          </select>
+          <input type="text" id="apiKeyCustomLabel" placeholder="Name it…" style="display:none;">
+          <input type="password" id="apiKeyValue" placeholder="Paste the API key…">
+          <button class="btn-solid" onclick="addApiKey()">Save key</button>
         </div>
+        <div id="apiKeyList"></div>
+
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
           <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;">
             <input type="checkbox" id="presToggle" onchange="setPresentationMode(this.checked)"> <strong>Presentation mode</strong> — fill the whole dashboard with realistic example coverage, for demos and walkthroughs
@@ -1604,7 +1625,7 @@ async function fetchReddit(topic){
 }
 
 async function fetchYouTube(topic){
-  const key = (localStorage.getItem('signal_youtube_key')||'').trim();
+  const key = getApiKey('youtube');
   if(!key) return [];
   try{
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=date&maxResults=4&q=${encodeURIComponent(topic)}&key=${key}`;
@@ -1624,14 +1645,58 @@ async function fetchYouTube(topic){
   }catch(e){ return []; }
 }
 
+async function fetchNewsApiOrg(topic){
+  const key = getApiKey('newsapi');
+  if(!key) return [];
+  try{
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(topic)}&sortBy=publishedAt&pageSize=8&apiKey=${key}`;
+    const res = await fetch(url);
+    if(!res.ok) return []; // NewsAPI blocks browser calls from non-localhost on the free tier — fails quietly, GDELT still covers this
+    const data = await res.json();
+    return (data.articles||[]).map(a=>({
+      author: a.source?.name || 'news',
+      text: a.title,
+      url: a.url,
+      platform: 'News',
+      topic, real: true,
+      sentiment: quickSentiment(a.title||''),
+      engagement: '—',
+      time: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : 'today'
+    }));
+  }catch(e){ return []; }
+}
+
+async function fetchGNews(topic){
+  const key = getApiKey('gnews');
+  if(!key) return [];
+  try{
+    const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(topic)}&max=8&apikey=${key}`;
+    const res = await fetch(url);
+    if(!res.ok) return [];
+    const data = await res.json();
+    return (data.articles||[]).map(a=>({
+      author: a.source?.name || 'news',
+      text: a.title,
+      url: a.url,
+      platform: 'News',
+      topic, real: true,
+      sentiment: quickSentiment(a.title||''),
+      engagement: '—',
+      time: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : 'today'
+    }));
+  }catch(e){ return []; }
+}
+
 async function pullRealNews(){
   const banner = document.getElementById('realStatus');
   if(banner) banner.textContent = 'fetching live news…';
   const targets = topics.map(t=>t.name); // every tracked topic, not just the first few
   let added = 0;
   for(const t of targets){
-    const [g,my,r,y] = await Promise.all([fetchGdelt(t), fetchTier1MY(t), fetchReddit(t), fetchYouTube(t)]);
-    for(const item of [...g,...my,...r,...y]){
+    const [g,my,r,y,na,gn] = await Promise.all([
+      fetchGdelt(t), fetchTier1MY(t), fetchReddit(t), fetchYouTube(t), fetchNewsApiOrg(t), fetchGNews(t)
+    ]);
+    for(const item of [...g,...my,...r,...y,...na,...gn]){
       if(seenUrls.has(item.url)) continue;
       seenUrls.add(item.url);
       if(!passesFilter(item)){ filteredOutCount++; continue; }
@@ -2438,22 +2503,74 @@ function setView(v){
 }
 
 
-/* ===== YOUTUBE KEY (optional, saved locally, same pattern as ILMU) ===== */
-function saveYoutubeKey(){
-  const key = document.getElementById('youtubeKeyInput').value.trim();
-  const status = document.getElementById('youtubeKeyStatus');
-  if(!key){ try{ localStorage.removeItem('signal_youtube_key'); }catch(e){} status.textContent = 'No key saved — YouTube results are skipped'; return; }
-  try{ localStorage.setItem('signal_youtube_key', key); }catch(e){}
-  status.innerHTML = '<span style="color:var(--teal);font-weight:600;">Saved</span> — YouTube results will appear on the next refresh';
+/* ===== API KEY MANAGER — add as many as you want, no limit ===== */
+const WIRED_SOURCES = { youtube: 'YouTube Data API', newsapi: 'NewsAPI.org', gnews: 'GNews.io' };
+let apiKeys = [];
+try{ apiKeys = JSON.parse(localStorage.getItem('signal_api_keys')||'[]'); }catch(e){ apiKeys = []; }
+function saveApiKeys(){ try{ localStorage.setItem('signal_api_keys', JSON.stringify(apiKeys)); }catch(e){} }
+
+// Live sources look up their key by source id. Custom/saved-only keys never get called anywhere —
+// that's the honest line between "wired up" and "just stored for later."
+function getApiKey(source){
+  const found = apiKeys.find(k => k.source === source);
+  return found ? found.value.trim() : '';
 }
-function loadYoutubeKey(){
-  try{
-    const key = localStorage.getItem('signal_youtube_key');
-    if(key){
-      document.getElementById('youtubeKeyInput').value = key;
-      document.getElementById('youtubeKeyStatus').innerHTML = '<span style="color:var(--teal);font-weight:600;">Saved</span> — YouTube results included in live pulls';
-    }
-  }catch(e){}
+
+function toggleCustomKeyLabel(){
+  const sel = document.getElementById('apiKeySource');
+  const labelInput = document.getElementById('apiKeyCustomLabel');
+  labelInput.style.display = sel.value === 'custom' ? 'block' : 'none';
+}
+document.getElementById('apiKeySource')?.addEventListener('change', toggleCustomKeyLabel);
+
+function addApiKey(){
+  const sel = document.getElementById('apiKeySource');
+  const valInput = document.getElementById('apiKeyValue');
+  const labelInput = document.getElementById('apiKeyCustomLabel');
+  const source = sel.value;
+  const value = valInput.value.trim();
+  if(!value){ alert('Paste the key first.'); return; }
+
+  const label = source === 'custom'
+    ? (labelInput.value.trim() || 'Custom key')
+    : WIRED_SOURCES[source];
+
+  // one key per wired source (adding again replaces it); custom keys can repeat under different names
+  if(source !== 'custom'){
+    apiKeys = apiKeys.filter(k => k.source !== source);
+  }
+  apiKeys.push({ source, label, value });
+  saveApiKeys();
+  valInput.value = '';
+  labelInput.value = '';
+  renderApiKeyList();
+  if(source in WIRED_SOURCES) pullRealNews(); // fetch immediately so the new source shows results right away
+}
+
+function removeApiKey(idx){
+  apiKeys.splice(idx, 1);
+  saveApiKeys();
+  renderApiKeyList();
+}
+
+function renderApiKeyList(){
+  const el = document.getElementById('apiKeyList');
+  if(!el) return;
+  if(!apiKeys.length){
+    el.innerHTML = `<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">No keys added yet. YouTube, NewsAPI.org, and GNews.io go live the moment you add one — everything else is safe to store here too, just not pulling data yet.</div>`;
+    return;
+  }
+  el.innerHTML = apiKeys.map((k,i) => {
+    const wired = k.source in WIRED_SOURCES;
+    const masked = k.value.length > 8 ? k.value.slice(0,4) + '••••••••' + k.value.slice(-4) : '••••••••';
+    return `<div class="apikey-row">
+      <div>
+        <div class="apikey-name">${k.label} <span class="apikey-tag ${wired?'live':'saved'}">${wired?'live':'saved only'}</span></div>
+        <div class="apikey-meta apikey-val">${masked}</div>
+      </div>
+      <button class="apikey-remove" onclick="removeApiKey(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
 }
 
 /* ===== ILMU CONNECTION (persisted to this browser via localStorage) ===== */
@@ -2702,9 +2819,11 @@ function renderSourceHealth(){
   const el = document.getElementById('sourceHealthPanel');
   if(!el) return;
   const has = p => allMentions.some(m => m.platform === p && m.real);
-  const ytKey = (localStorage.getItem('signal_youtube_key')||'').trim();
+  const ytKey = getApiKey('youtube');
   const rows = [
-    ['News', has('News') ? 'live' : 'checking', has('News') ? 'Live' : 'Checking'],
+    ['News (global + Tier 1 MY)', has('News') ? 'live' : 'checking', has('News') ? 'Live' : 'Checking'],
+    ['NewsAPI.org', getApiKey('newsapi') ? 'live' : 'manual', getApiKey('newsapi') ? 'Key added — pulling' : 'No key — add one in Settings'],
+    ['GNews.io', getApiKey('gnews') ? 'live' : 'manual', getApiKey('gnews') ? 'Key added — pulling' : 'No key — add one in Settings'],
     ['Reddit', has('Reddit') ? 'live' : 'checking', has('Reddit') ? 'Live' : 'Checking'],
     ['YouTube', ytKey ? (has('YouTube') ? 'live' : 'checking') : 'manual', ytKey ? (has('YouTube') ? 'Live' : 'Checking') : 'Needs a free key — see Settings'],
     ['Instagram / Facebook / X', 'manual', 'Manual intake only — no free API exists']
@@ -3981,7 +4100,7 @@ renderNews();
 renderYtl();
 renderCrisisZone();
 loadSavedIlmu();
-loadYoutubeKey();
+renderApiKeyList();
 renderNextSteps();
 renderNavCounts();
 renderMockSocial();
