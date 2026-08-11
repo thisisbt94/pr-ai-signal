@@ -1564,16 +1564,22 @@ async function fetchGdelt(topic){
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
-    return (data.articles||[]).map(a=>({
-      author: a.domain || 'news',
-      text: a.title,
-      url: a.url,
-      platform: 'News',
-      topic, real: true,
-      sentiment: quickSentiment(a.title||''),
-      engagement: '—',
-      time: (a.seendate||'').replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
-    }));
+    return (data.articles||[]).map(a=>{
+      const raw = a.seendate||'';
+      const iso = raw.replace(/^(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/, '$1-$2-$3T$4:$5:00Z');
+      const ms = raw ? Date.parse(iso) : NaN;
+      return {
+        author: a.domain || 'news',
+        text: a.title,
+        url: a.url,
+        platform: 'News',
+        topic, real: true,
+        sentiment: quickSentiment(a.title||''),
+        engagement: '—',
+        publishedMs: isNaN(ms) ? null : ms,
+        time: raw.replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
+      };
+    });
   }catch(e){ return []; }
 }
 
@@ -1589,17 +1595,23 @@ async function fetchTier1MY(topic){
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
-    return (data.articles||[]).map(a=>({
-      author: a.domain || 'news',
-      text: a.title,
-      url: a.url,
-      platform: 'News',
-      topic, real: true,
-      tier1: true,
-      sentiment: quickSentiment(a.title||''),
-      engagement: '—',
-      time: (a.seendate||'').replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
-    }));
+    return (data.articles||[]).map(a=>{
+      const raw = a.seendate||'';
+      const iso = raw.replace(/^(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/, '$1-$2-$3T$4:$5:00Z');
+      const ms = raw ? Date.parse(iso) : NaN;
+      return {
+        author: a.domain || 'news',
+        text: a.title,
+        url: a.url,
+        platform: 'News',
+        topic, real: true,
+        tier1: true,
+        sentiment: quickSentiment(a.title||''),
+        engagement: '—',
+        publishedMs: isNaN(ms) ? null : ms,
+        time: raw.replace(/(\d{4})(\d{2})(\d{2})T?(\d{2})(\d{2}).*/,'$4:$5 UTC') || 'today'
+      };
+    });
   }catch(e){ return []; }
 }
 
@@ -1611,6 +1623,7 @@ async function fetchReddit(topic){
     const data = await res.json();
     return (data.data?.children||[]).map(c=>{
       const d = c.data;
+      const ms = d.created_utc ? d.created_utc * 1000 : null;
       return {
         author: 'r/'+d.subreddit,
         text: d.title,
@@ -1619,7 +1632,8 @@ async function fetchReddit(topic){
         topic, real: true,
         sentiment: quickSentiment(d.title||''),
         engagement: (d.ups||0)+(d.num_comments||0),
-        time: d.created_utc ? new Date(d.created_utc*1000).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'today'
+        publishedMs: ms,
+        time: ms ? new Date(ms).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'today'
       };
     });
   }catch(e){
@@ -1636,16 +1650,20 @@ async function fetchYouTube(topic){
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
-    return (data.items||[]).map(v=>({
-      author: v.snippet.channelTitle,
-      text: v.snippet.title,
-      url: 'https://www.youtube.com/watch?v='+v.id.videoId,
-      platform: 'YouTube',
-      topic, real: true,
-      sentiment: quickSentiment(v.snippet.title||''),
-      engagement: '—',
-      time: v.snippet.publishedAt ? new Date(v.snippet.publishedAt).toLocaleDateString() : 'today'
-    }));
+    return (data.items||[]).map(v=>{
+      const ms = v.snippet.publishedAt ? Date.parse(v.snippet.publishedAt) : null;
+      return {
+        author: v.snippet.channelTitle,
+        text: v.snippet.title,
+        url: 'https://www.youtube.com/watch?v='+v.id.videoId,
+        platform: 'YouTube',
+        topic, real: true,
+        sentiment: quickSentiment(v.snippet.title||''),
+        engagement: '—',
+        publishedMs: ms,
+        time: ms ? new Date(ms).toLocaleDateString() : 'today'
+      };
+    });
   }catch(e){ return []; }
 }
 
@@ -1657,16 +1675,20 @@ async function fetchNewsApiOrg(topic){
     const res = await fetch(url);
     if(!res.ok) return []; // NewsAPI blocks browser calls from non-localhost on the free tier — fails quietly, GDELT still covers this
     const data = await res.json();
-    return (data.articles||[]).map(a=>({
-      author: a.source?.name || 'news',
-      text: a.title,
-      url: a.url,
-      platform: 'News',
-      topic, real: true,
-      sentiment: quickSentiment(a.title||''),
-      engagement: '—',
-      time: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : 'today'
-    }));
+    return (data.articles||[]).map(a=>{
+      const ms = a.publishedAt ? Date.parse(a.publishedAt) : null;
+      return {
+        author: a.source?.name || 'news',
+        text: a.title,
+        url: a.url,
+        platform: 'News',
+        topic, real: true,
+        sentiment: quickSentiment(a.title||''),
+        engagement: '—',
+        publishedMs: ms,
+        time: ms ? new Date(ms).toLocaleDateString() : 'today'
+      };
+    });
   }catch(e){ return []; }
 }
 
@@ -1678,16 +1700,20 @@ async function fetchGNews(topic){
     const res = await fetch(url);
     if(!res.ok) return [];
     const data = await res.json();
-    return (data.articles||[]).map(a=>({
-      author: a.source?.name || 'news',
-      text: a.title,
-      url: a.url,
-      platform: 'News',
-      topic, real: true,
-      sentiment: quickSentiment(a.title||''),
-      engagement: '—',
-      time: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString() : 'today'
-    }));
+    return (data.articles||[]).map(a=>{
+      const ms = a.publishedAt ? Date.parse(a.publishedAt) : null;
+      return {
+        author: a.source?.name || 'news',
+        text: a.title,
+        url: a.url,
+        platform: 'News',
+        topic, real: true,
+        sentiment: quickSentiment(a.title||''),
+        engagement: '—',
+        publishedMs: ms,
+        time: ms ? new Date(ms).toLocaleDateString() : 'today'
+      };
+    });
   }catch(e){ return []; }
 }
 
@@ -2673,9 +2699,14 @@ let searchTrendChart = null;
 
 /* every item gets a timestamp so history is queryable later */
 function stampAge(m){
-  if(m.ageDays == null){
-    m.ageDays = m.real ? Math.floor(Math.random()*3) : Math.floor(Math.random()*45);
+  if(m.ageDays != null) return m.ageDays;
+  if(m.publishedMs){
+    m.ageDays = Math.max(0, Math.floor((Date.now() - m.publishedMs) / 86400000));
+    return m.ageDays;
   }
+  // No real timestamp available (simulated/demo social chatter) — spread it across a
+  // plausible recent window purely so the search date filters have something to show.
+  m.ageDays = m.real ? 0 : Math.floor(Math.random()*45);
   return m.ageDays;
 }
 function inRange(m){
