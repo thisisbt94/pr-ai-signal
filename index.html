@@ -414,65 +414,7 @@
   .avoid-card:last-child{margin-bottom:0;}
   .avoid-card strong{display:block;margin-bottom:3px;}
 
-  
-/* ===== SUGGESTED POSTS — turns Content Ideas into a ready-to-use guide, not a data dump ===== */
-const SUGGEST_FORMATS = ['Reels / short video', 'Carousel', 'Single image + caption'];
-
-function captionFor(m, idx){
-  const outlet = String(m.author||'').replace(/^www\./,'');
-  const templates = [
-    `📰 ${outlet} is reporting: "${(m.text||'').slice(0,110)}${(m.text||'').length>110?'…':''}"\n\nHere's why it matters for ${m.topic}: [add your one-line take].\n\n`,
-    `Big moment for ${m.topic} — ${outlet} covering it now.\n\n"${(m.text||'').slice(0,100)}${(m.text||'').length>100?'…':''}"\n\nWhat this means for us: [add context].\n\n`,
-    `Worth a share: ${outlet} on ${m.topic}.\n\n${(m.text||'').slice(0,110)}${(m.text||'').length>110?'…':''}\n\n[Add your team's perspective here.]\n\n`
-  ];
-  return templates[idx % templates.length];
-}
-
-function renderSuggestedPosts(){
-  const el = document.getElementById('suggestedPosts');
-  if(!el) return;
-  const positives = allMentions.filter(m => m.real && m.sentiment === 'pos');
-  const picks = topByRelevance(positives, 3);
-
-  if(!picks.length){
-    el.innerHTML = `<div style="font-size:12.5px;color:var(--text-dim);line-height:1.6;padding:8px 0;">No strongly positive real coverage yet to build a suggestion from. Once something lands, a ready-to-post suggestion appears here automatically.</div>`;
-    return;
-  }
-
-  const kws = extractKeywords().slice(0,6).map(([w])=>toHashtag(w));
-  const evergreen = ['#YTL', '#MalaysiaBusiness'];
-
-  el.innerHTML = picks.map((m, i) => {
-    const tags = [...new Set([toHashtag(m.topic.split(' ')[0]), ...kws.slice(0,2), ...evergreen])].slice(0,5);
-    const caption = captionFor(m, i);
-    const captionId = 'suggestCaption' + i;
-    return `<div class="suggest-card">
-      <div class="suggest-head">
-        <div style="display:flex;align-items:center;gap:9px;">
-          <span class="suggest-num">${i+1}</span>
-          <strong style="font-size:12.5px;">${m.topic}</strong>
-        </div>
-        <span class="suggest-format">${SUGGEST_FORMATS[i % SUGGEST_FORMATS.length]}</span>
-      </div>
-      <div class="suggest-caption" id="${captionId}">${caption.replace(/\n/g,'<br>')}</div>
-      <div class="suggest-tags">${tags.map(t=>`<span class="hashtag" style="cursor:default;">${t}</span>`).join('')}</div>
-      <div class="suggest-actions">
-        <button class="suggest-btn primary" onclick="copySuggestion('${captionId}', ${JSON.stringify(tags.join(' '))})">Copy caption + tags</button>
-        <button class="suggest-btn" onclick="openDetail('${m.id}')">See the source story</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function copySuggestion(captionId, tags){
-  const el = document.getElementById(captionId);
-  const text = (el?.innerText || '') + '\n\n' + tags;
-  navigator.clipboard?.writeText(text);
-  const btn = event?.target;
-  if(btn){ const orig = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent = orig, 1000); }
-}
-
-/* ===== REAL TRENDING POSTS ===== */
+  /* ===== REAL TRENDING POSTS ===== */
   .trend-post{display:flex;gap:14px;padding:13px 4px;border-bottom:1px solid var(--line);cursor:pointer;align-items:flex-start;}
   .trend-post:last-child{border-bottom:none;}
   .trend-post:hover{background:var(--surface-2);}
