@@ -379,6 +379,8 @@
   .sc-rival:hover{border-color:var(--accent);color:var(--accent);}
   .sc-rival .n{color:var(--text-dim2);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-left:3px;}
   .sc-rival.custom{border-style:dashed;}
+  .sc-rival.sc-add{background:none;border:1px dashed var(--line);color:var(--text-dim);font-weight:600;}
+  .sc-rival.sc-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
 
   .comp-add{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .comp-add input{flex:1;min-width:180px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:12.5px;font-family:inherit;}
@@ -854,52 +856,36 @@
 
     <!-- 3. US VS THEM (YTL watch + news stories merged) -->
     <div class="page" id="page-ytl">
-      <div class="page-title"><div><h2>Competitor News</h2><p>How much of the conversation is about YTL, and what our competitors are up to.</p></div></div>
+      <div class="page-title"><div><h2>Competitors</h2><p>How much of the conversation is about YTL, and what our competitors are up to.</p></div></div>
 
-      
       <div class="kpi-row">
-        <div class="kpi"><div class="l">About YTL</div><div class="v" id="ytlMentions">—</div><div class="d up">across all segments</div></div>
+        <div class="kpi"><div class="l">About YTL</div><div class="v" id="ytlMentions">—</div><div class="d up">across all categories</div></div>
         <div class="kpi"><div class="l">About competitors</div><div class="v" id="rivalMentions">—</div><div class="d">tracked rivals</div></div>
         <div class="kpi"><div class="l">Our slice of the talk</div><div class="v" id="ytlSov">—</div><div class="d">YTL vs industry</div></div>
-        <div class="kpi"><div class="l">Business areas</div><div class="v">7</div><div class="d">utilities to digital</div></div>
+        <div class="kpi"><div class="l">Categories tracked</div><div class="v" id="catCount">—</div><div class="d">click a card below to add one</div></div>
       </div>
 
-      <div class="section-head">Who we watch, by business area</div>
-      <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 16px;">Click any competitor for their full profile — it opens here, you don't lose your place.</p>
+      <div class="section-head">Manage what you track</div>
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="comp-add">
+          <input type="text" id="newCatInput" placeholder="New category (e.g. Renewable Energy)">
+          <button class="btn-solid" id="addCatBtn" onclick="addCategoryQuick()">Add category</button>
+        </div>
+        <div class="comp-add" style="margin-top:8px;">
+          <input type="text" id="newCompInput" placeholder="Competitor name (e.g. Sunway Group)">
+          <select id="newCompSeg"></select>
+          <button class="btn-solid" onclick="addCompetitor()">Add competitor</button>
+        </div>
+      </div>
+
+      <div class="section-head">Who we watch, by category</div>
+      <p style="font-size:12.5px;color:var(--text-dim);margin:-6px 0 16px;">Click a competitor for their full profile. Click "+ add here" on any card to add straight into that category — no dropdown hunting.</p>
 
       <div class="seg-cards" id="segCards"></div>
 
-      <div class="panel" style="margin-bottom:16px;">
-        <h3>Manage your competitor list <span>Add anyone you want to keep an eye on</span></h3>
-        <div class="comp-add">
-          <input type="text" id="newCompInput" placeholder="Competitor name (e.g. Sunway Group)">
-          <select id="newCompSeg"></select>
-          <button class="btn-solid" onclick="addCompetitor()">Add</button>
-        </div>
-        <div id="customCompList"></div>
-      </div>
-
-      <div class="panel" style="margin-bottom:16px;">
-        <h3>YTL coverage by business area <span>Where our own news is concentrated</span></h3>
-        <div id="segSplitList"></div>
-      </div>
-      <div class="section-head">Top news stories today</div>
-
-      
-      <div class="panel" style="margin-bottom:16px;">
-        <h3>Top stories today <span>ranked by outlets + score</span></h3>
-        <div id="clusterList"></div>
-      </div>
-
-      <div class="grid2">
-        <div class="panel">
-          <h3>Share of voice vs. industry</h3>
-          <div id="sovNewsList"></div>
-        </div>
-        <div class="panel">
-          <h3>Spokesperson &amp; exec mentions</h3>
-          <div id="spokespersonList"></div>
-        </div>
+      <div class="panel" style="margin:16px 0;">
+        <h3>Share of voice, by category <span>Real numbers — computed from your tracked competitors</span></h3>
+        <div id="sovNewsList"></div>
       </div>
 
       <div id="nextStepsYtl"></div>
@@ -1289,11 +1275,11 @@ const sentWeights = [0.5,0.32,0.18];
 
 let topics = [
   {name:'YTL Corporation', count:0, seg:'Group'},
-  {name:'YTL Power International', count:0, seg:'Utilities'},
+  {name:'YTL Power International', count:0, seg:'Utilities & Power'},
   {name:'Sovereign AI Malaysia', count:0, seg:'Data Centre & AI'},
   {name:'YTL data centre', count:0, seg:'Data Centre & AI'},
-  {name:'Malayan Cement', count:0, seg:'Cement'},
-  {name:'Yes 4G / Ryt Bank', count:0, seg:'Digital'}
+  {name:'Malayan Cement', count:0, seg:'Cement & Building Materials'},
+  {name:'Yes 4G / Ryt Bank', count:0, seg:'Telco & Digital Banking'}
 ];
 
 /* YTL business map — drives the YTL Watch page */
@@ -1759,6 +1745,8 @@ function removeTopic(i){
   renderTopics();
 }
 document.getElementById('newTopicInput').addEventListener('keydown', e=>{ if(e.key==='Enter') addTopic(); });
+document.getElementById('newCatInput')?.addEventListener('keydown', e=>{ if(e.key==='Enter') addCategoryQuick(); });
+document.getElementById('newCompInput')?.addEventListener('keydown', e=>{ if(e.key==='Enter') addCompetitor(); });
 
 /* ===== INFLUENCERS ===== */
 function renderInfluencers(){
@@ -1950,14 +1938,9 @@ const spokespeople = [
 ];
 
 function renderNews(){
-  document.getElementById('clusterList').innerHTML = newsClusters.map((c,i)=>`
-    <div class="data-row" style="cursor:pointer;" onclick="goToBrowseWithQuery('${c.headline.slice(0,30).replace(/'/g,"")}', '${c.headline.slice(0,40).replace(/'/g,"")}', 'One of today\'s top stories — this shows every source covering it.', 'ytl')" title="See related coverage">
-    <div class="drl"><strong>${i+1}. ${c.headline}</strong><div class="sub">${c.outlets} outlets covering</div></div>
-    <div style="display:flex;align-items:center;gap:10px;"><span class="m-tag ${sentClass(c.sentiment)}">${sentLabel(c.sentiment)}</span><span class="drv">${c.score}</span></div></div>`).join('');
-  document.getElementById('sovNewsList').innerHTML = sovNews.map(s=>`
-    <div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${s.name}</span><span class="mono">${s.pct}%</span></div><div class="sov-bar"><div class="sov-seg" style="width:${s.pct}%;background:${s.color};"></div></div></div>`).join('');
-  document.getElementById('spokespersonList').innerHTML = spokespeople.map(s=>`
-    <div class="data-row"><div class="drl"><strong>${s.name}</strong><div class="sub">${s.mentions} mentions this week</div></div><span class="m-tag ${sentClass(s.sentiment)}">${sentLabel(s.sentiment)}</span></div>`).join('');
+  // clusterList / spokespersonList / the old fake sovNewsList were removed from the
+  // Competitors page (duplicated Today's top stories, or were static mock data with
+  // no real basis). Real share-of-voice now lives in renderCategorySov().
 }
 
 /* ===== GRID PAGE ===== */
@@ -2089,22 +2072,41 @@ const rivalActivity = [
   {name:'Genting Malaysia', seg:'Hospitality', vol:9}
 ];
 function renderYtl(){
-  // segment table + rival list are now rendered by renderSegCards()/renderCustomComps()
-  // against the newer card-based markup — this function only owns the KPI numbers + split chart.
   const rivalTotal = rivalActivity.reduce((a,b)=>a+b.vol,0);
 
   const ytlCount = allMentions.filter(m=>/ytl|yes 4g|ryt|malayan cement|wessex|ranhill/i.test(m.topic+' '+m.text)).length;
   document.getElementById('ytlMentions').textContent = ytlCount;
   document.getElementById('rivalMentions').textContent = rivalTotal;
   document.getElementById('ytlSov').textContent = Math.round(ytlCount/(ytlCount+rivalTotal)*100 || 0)+'%';
+  const catCountEl = document.getElementById('catCount');
+  if(catCountEl) catCountEl.textContent = allCategoryNames().length;
 
-  const segCounts = {};
-  topics.forEach(t=>{ if(t.seg) segCounts[t.seg] = (segCounts[t.seg]||0)+t.count; });
-  const segTotal = Object.values(segCounts).reduce((a,b)=>a+b,0) || 1;
-  const colors = ['#e2386b','#2469c9','#0e9c86','#c9821e','#9a9ea9'];
-  document.getElementById('segSplitList').innerHTML = Object.entries(segCounts).map(([k,v],i)=>{
-    const pct = Math.round(v/segTotal*100);
-    return `<div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${k}</span><span class="mono">${pct}%</span></div><div class="sov-bar"><div class="sov-seg" style="width:${pct}%;background:${colors[i%colors.length]};"></div></div></div>`;
+  renderCategorySov();
+}
+
+/* Real, computed share of voice per category — replaces the old hardcoded 38/31/19/12 mock */
+function renderCategorySov(){
+  const el = document.getElementById('sovNewsList');
+  if(!el) return;
+  const colors = ['#e2386b','#2469c9','#0e9c86','#c9821e','#9a9ea9','#7a5cf0'];
+  const rows = allCategoryNames().map(cat => {
+    const built = ytlSegments.find(s=>s.seg===cat);
+    const rivals = built ? built.rivals : customCompetitors.filter(c=>c.seg===cat).map(c=>c.name);
+    const rivalCount = rivals.reduce((sum,r)=>sum + competitorMentions(r).length, 0);
+    const ytlHere = topics.filter(t=>t.seg===cat).reduce((s,t)=>s + allMentions.filter(m=>m.topic===t.name).length, 0);
+    return { cat, total: rivalCount + ytlHere, ytlHere, rivalCount };
+  }).filter(r => r.total > 0).sort((a,b)=>b.total-a.total);
+
+  if(!rows.length){
+    el.innerHTML = `<div class="cm-empty">No coverage yet in any category — once real news or Reddit posts come in on a tracked topic or competitor, the breakdown appears here.</div>`;
+    return;
+  }
+  el.innerHTML = rows.map((r,i) => {
+    const pct = Math.round((r.ytlHere / r.total) * 100);
+    return `<div style="margin-bottom:14px;cursor:pointer;" onclick="navigateTo('trends')" title="See trends for this category">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${r.cat}</span><span class="mono">${pct}% YTL / ${100-pct}% competitors</span></div>
+      <div class="sov-bar"><div class="sov-seg" style="width:${pct}%;background:${colors[i%colors.length]};"></div></div>
+    </div>`;
   }).join('');
 }
 
@@ -3204,6 +3206,43 @@ let customCompetitors = [];
 try{ customCompetitors = JSON.parse(localStorage.getItem('signal_custom_comps')||'[]'); }catch(e){ customCompetitors = []; }
 function saveCustomComps(){ try{ localStorage.setItem('signal_custom_comps', JSON.stringify(customCompetitors)); }catch(e){} }
 
+/* ===== CATEGORIES — user-created, sit alongside the 7 built-in YTL segments ===== */
+let customCategories = [];
+try{ customCategories = JSON.parse(localStorage.getItem('signal_custom_categories')||'[]'); }catch(e){ customCategories = []; }
+function saveCustomCategories(){ try{ localStorage.setItem('signal_custom_categories', JSON.stringify(customCategories)); }catch(e){} }
+
+function allCategoryNames(){
+  return [...ytlSegments.map(s=>s.seg), ...customCategories];
+}
+function addCategory(name){
+  name = (name||'').trim();
+  if(!name) return false;
+  if(allCategoryNames().some(c=>c.toLowerCase()===name.toLowerCase())) return false;
+  customCategories.push(name);
+  saveCustomCategories();
+  return true;
+}
+function addCategoryQuick(){
+  const input = document.getElementById('newCatInput');
+  const name = input.value.trim();
+  if(!name) return;
+  if(!addCategory(name)){ alert(name + ' already exists as a category.'); return; }
+  input.value = '';
+  populateCategoryDropdown(true); // force-rebuild since the option list just changed
+  renderSegCards();
+  renderYtl(); // refreshes the "Categories tracked" KPI count
+}
+function removeCategory(name){
+  if(ytlSegments.some(s=>s.seg===name)){ alert('Built-in categories can\'t be removed — only ones you added.'); return; }
+  customCategories = customCategories.filter(c=>c!==name);
+  customCompetitors.forEach(c=>{ if(c.seg===name) c.seg='Other'; }); // don't orphan their competitors
+  saveCustomCategories();
+  saveCustomComps();
+  populateCategoryDropdown(true);
+  renderSegCards();
+  renderYtl(); // refreshes the "Categories tracked" KPI count
+}
+
 function allCompetitors(){
   const out = [];
   const seen = new Set();
@@ -3216,7 +3255,16 @@ function allCompetitors(){
   return out;
 }
 
-function addCompetitor(){
+function populateCategoryDropdown(force){
+  const sel = document.getElementById('newCompSeg');
+  if(!sel) return;
+  if(!force && sel.options.length) return;
+  const current = sel.value;
+  sel.innerHTML = allCategoryNames().map(s=>`<option>${s}</option>`).join('') + '<option>Other</option>';
+  if(current && [...sel.options].some(o=>o.value===current)) sel.value = current;
+}
+
+function addCompetitor(presetSeg){
   const input = document.getElementById('newCompInput');
   const sel = document.getElementById('newCompSeg');
   const name = input.value.trim();
@@ -3225,46 +3273,37 @@ function addCompetitor(){
     alert(name + ' is already on your list.');
     return;
   }
-  customCompetitors.push({ name, seg: sel.value });
+  const seg = presetSeg || sel.value;
+  customCompetitors.push({ name, seg });
   saveCustomComps();
   input.value = '';
   renderSegCards();
-  renderCustomComps();
 }
 function removeCompetitor(name){
   customCompetitors = customCompetitors.filter(r=>r.name !== name);
   saveCustomComps();
   renderSegCards();
-  renderCustomComps();
 }
 
-function renderCustomComps(){
-  const el = document.getElementById('customCompList');
-  if(!el) return;
-  // populate the segment dropdown once
+/* Quick-add straight from a category card — pre-fills the category, focuses the name field, no dropdown hunting */
+function quickAddToCategory(catName){
+  populateCategoryDropdown(true);
   const sel = document.getElementById('newCompSeg');
-  if(sel && !sel.options.length){
-    sel.innerHTML = ytlSegments.map(s=>`<option>${s.seg}</option>`).join('') + '<option>Other</option>';
-  }
-  el.innerHTML = customCompetitors.length
-    ? customCompetitors.map(r=>`
-      <div class="custom-comp-row">
-        <div>
-          <div class="ccr-name" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${r.seg.replace(/'/g,"")}')">${r.name}</div>
-          <div class="ccr-seg">${r.seg} · ${competitorMentions(r.name).length} items in feed</div>
-        </div>
-        <button class="ccr-remove" onclick="removeCompetitor('${r.name.replace(/'/g,"")}')" title="Remove">✕</button>
-      </div>`).join('')
-    : '<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">No competitors added yet — the built-in list above covers YTL\'s main rivals. Add anyone else you want to watch.</div>';
+  const input = document.getElementById('newCompInput');
+  if(sel) sel.value = catName;
+  if(input) input.focus();
+  input?.scrollIntoView?.({behavior:'smooth', block:'center'});
 }
 
 function renderSegCards(){
   const el = document.getElementById('segCards');
   if(!el) return;
+  populateCategoryDropdown();
+
   const customBySeg = {};
   customCompetitors.forEach(r=>{ (customBySeg[r.seg] = customBySeg[r.seg]||[]).push(r.name); });
 
-  const cards = ytlSegments.map(s=>{
+  const builtCards = ytlSegments.map(s=>{
     const rivals = [...s.rivals.map(r=>({name:r, custom:false})), ...(customBySeg[s.seg]||[]).map(n=>({name:n, custom:true}))];
     const segMentions = rivals.reduce((sum,r)=>sum + competitorMentions(r.name).length, 0);
     return `<div class="seg-card">
@@ -3276,16 +3315,36 @@ function renderSegCards(){
       <div class="sc-rivals">${rivals.map(r=>{
         const n = competitorMentions(r.name).length;
         return `<span class="sc-rival ${r.custom?'custom':''}" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${s.seg.replace(/'/g,"")}')">${r.name}${n?`<span class="n">${n}</span>`:''}</span>`;
-      }).join('')}</div>
+      }).join('')}
+      <span class="sc-rival sc-add" onclick="quickAddToCategory('${s.seg.replace(/'/g,"")}')" title="Add a competitor to this category">+ add here</span></div>
     </div>`;
   });
 
-  // any custom competitors filed under "Other"
+  // custom, user-created categories get their own cards in the exact same style — no second-class treatment
+  const customCards = customCategories.map(cat=>{
+    const rivals = (customBySeg[cat]||[]).map(n=>({name:n, custom:true}));
+    const segMentions = rivals.reduce((sum,r)=>sum + competitorMentions(r.name).length, 0);
+    return `<div class="seg-card">
+      <div class="sc-head">
+        <span class="sc-title" onclick="goToBrowseWithQuery('${cat.replace(/'/g,"")}', '${cat.replace(/'/g,"")}', 'A category you created.', 'ytl')">${cat}</span>
+        <span class="sc-count">${segMentions} in feed</span>
+      </div>
+      <div class="sc-ytl">Your category — <span class="rm" style="cursor:pointer;color:var(--accent);" onclick="removeCategory('${cat.replace(/'/g,"")}')">remove</span></div>
+      <div class="sc-rivals">${rivals.map(r=>{
+        const n = competitorMentions(r.name).length;
+        return `<span class="sc-rival custom" onclick="openCompetitor('${r.name.replace(/'/g,"")}', '${cat.replace(/'/g,"")}')">${r.name}${n?`<span class="n">${n}</span>`:''}</span>`;
+      }).join('')}
+      <span class="sc-rival sc-add" onclick="quickAddToCategory('${cat.replace(/'/g,"")}')" title="Add a competitor to this category">+ add here</span></div>
+    </div>`;
+  });
+
+  const cards = [...builtCards, ...customCards];
+
   const others = (customBySeg['Other']||[]);
   if(others.length){
     cards.push(`<div class="seg-card">
-      <div class="sc-head"><span class="sc-title">Other watchlist</span><span class="sc-count">${others.reduce((s,n)=>s+competitorMentions(n).length,0)} in feed</span></div>
-      <div class="sc-ytl">Competitors you added that don't map to a YTL business area.</div>
+      <div class="sc-head"><span class="sc-title">Unsorted</span><span class="sc-count">${others.reduce((s,n)=>s+competitorMentions(n).length,0)} in feed</span></div>
+      <div class="sc-ytl">Added without picking a category.</div>
       <div class="sc-rivals">${others.map(n=>{
         const cnt = competitorMentions(n).length;
         return `<span class="sc-rival custom" onclick="openCompetitor('${n.replace(/'/g,"")}', 'Other')">${n}${cnt?`<span class="n">${cnt}</span>`:''}</span>`;
@@ -3894,7 +3953,6 @@ function tick(){
   renderWorkQueue();
   renderWall();
   renderSegCards();
-  renderCustomComps();
   renderContentIdeas();
   renderSuggestedPosts();
   renderNavCounts();
