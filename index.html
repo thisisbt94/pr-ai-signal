@@ -286,8 +286,11 @@
   .wn-good .wn-a{color:var(--teal);}
   .wn-bad .wn-a{color:var(--accent);}
 
-  .wall-grid{display:grid;grid-template-columns:1.15fr 1fr 0.9fr;gap:14px;align-items:start;}
-  .wall-col{display:flex;flex-direction:column;gap:14px;}
+  .wall-zone-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim2);font-weight:700;margin:24px 0 12px;}
+  .wall-zone-label:first-of-type{margin-top:0;}
+  .wall-row{display:grid;gap:14px;align-items:start;margin-bottom:0;}
+  .wall-row-2{grid-template-columns:1fr 1fr;}
+  .wall-row-3{grid-template-columns:1fr 1fr 1fr;}
   .wall-panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;}
   .wp-head{padding:13px 16px 11px;border-bottom:1px solid var(--line);background:var(--surface-2);}
   .wp-head h4{font-size:13px;font-weight:700;margin-bottom:2px;}
@@ -313,14 +316,15 @@
   .wt-bar div{height:100%;background:var(--accent);}
   .wt-count{font-size:11.5px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);min-width:22px;text-align:right;}
 
-  .wall-ask{padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;font-size:12px;margin-bottom:8px;cursor:pointer;font-weight:500;}
-  .wall-ask:last-child{margin-bottom:0;}
+  .wall-ask-bar{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
+  .wall-ask-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .wall-ask{padding:10px 15px;background:var(--surface-2);border:1px solid var(--line);border-radius:20px;font-size:12px;cursor:pointer;font-weight:500;white-space:nowrap;}
   .wall-ask:hover{border-color:var(--accent);color:var(--accent);}
 
   .wall-empty{padding:24px 16px;text-align:center;font-size:12px;color:var(--text-dim);line-height:1.5;}
 
-  @media(max-width:1200px){ .wall-grid{grid-template-columns:1fr 1fr;} .wall-col:last-child{grid-column:1/-1;} }
-  @media(max-width:1000px){ .wall-grid{grid-template-columns:1fr;} .wall-col:last-child{grid-column:auto;} .wall-numbers{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:1100px){ .wall-row-3{grid-template-columns:1fr 1fr;} .wall-row-3 .wall-panel:last-child{grid-column:1/-1;} }
+  @media(max-width:800px){ .wall-row-2, .wall-row-3{grid-template-columns:1fr;} .wall-row-3 .wall-panel:last-child{grid-column:auto;} .wall-numbers{grid-template-columns:repeat(2,1fr);} }
 
   .welcome-overlay{position:fixed;inset:0;background:rgba(20,20,40,.5);z-index:80;display:none;align-items:center;justify-content:center;padding:20px;}
   .welcome-overlay.show{display:flex;}
@@ -686,71 +690,67 @@
 
       <div class="wall-numbers" id="wallNumbers"></div>
 
-      <div class="wall-grid">
-        <div class="wall-col">
-          <div class="wall-panel">
-            <div class="wp-head">
-              <h4>What just came in</h4>
-              <span class="wp-sub">Newest first · updates every minute · click any headline to open the source</span>
-            </div>
-            <div class="wp-body" id="wallFeed"></div>
-            <div class="wp-foot" onclick="clearBrowseContext(true);navigateTo('grid');runSearch();">See everything →</div>
+      <div class="wall-zone-label">Right now</div>
+      <div class="wall-row wall-row-2">
+        <div class="wall-panel">
+          <div class="wp-head">
+            <h4>What just came in</h4>
+            <span class="wp-sub">Newest first · updates every minute · click any headline to open the source</span>
           </div>
+          <div class="wp-body" id="wallFeed"></div>
+          <div class="wp-foot" onclick="clearBrowseContext(true);navigateTo('grid');runSearch();">See everything →</div>
         </div>
 
-        <div class="wall-col">
-          <div class="wall-panel">
-            <div class="wp-head">
-              <h4>Read these first</h4>
-              <span class="wp-sub">Ranked by how much they matter to us</span>
-            </div>
-            <div class="wp-body" id="wallPriority"></div>
-            <div class="wp-foot" onclick="navigateTo('dash')">Full briefing →</div>
+        <div class="wall-panel">
+          <div class="wp-head">
+            <h4>Read these first</h4>
+            <span class="wp-sub">Ranked by how much they matter to us</span>
           </div>
+          <div class="wp-body" id="wallPriority"></div>
+          <div class="wp-foot" onclick="navigateTo('dash')">Full briefing →</div>
+        </div>
+      </div>
 
-          <div class="wall-panel">
-            <div class="wp-head">
-              <h4>Good news worth sharing</h4>
-              <span class="wp-sub">Positive coverage you could amplify</span>
-            </div>
-            <div class="wp-body" id="wallGood"></div>
+      <div class="wall-zone-label">Opportunities &amp; what you're tracking</div>
+      <div class="wall-row wall-row-3">
+        <div class="wall-panel">
+          <div class="wp-head">
+            <h4>Good news worth sharing</h4>
+            <span class="wp-sub">Positive coverage you could amplify</span>
           </div>
+          <div class="wp-body" id="wallGood"></div>
         </div>
 
-        <div class="wall-col">
-          <div class="wall-panel">
-            <div class="wp-head">
-              <h4>What we're tracking</h4>
-              <span class="wp-sub">Add or remove right here · click a topic to see its trends</span>
-            </div>
-            <div class="wt-add-row">
-              <input type="text" id="terminalTopicInput" placeholder="Add a topic…">
-              <button class="btn-solid" id="terminalAddBtn" onclick="addTopicFromTerminal()">Add</button>
-            </div>
-            <div class="wp-body" id="wallTopics"></div>
-            <div class="wp-foot" onclick="navigateTo('trends')">See topic trends →</div>
+        <div class="wall-panel">
+          <div class="wp-head">
+            <h4>What we're tracking</h4>
+            <span class="wp-sub">Add or remove right here · click a topic to see its trends</span>
           </div>
+          <div class="wt-add-row">
+            <input type="text" id="terminalTopicInput" placeholder="Add a topic…">
+            <button class="btn-solid" id="terminalAddBtn" onclick="addTopicFromTerminal()">Add</button>
+          </div>
+          <div class="wp-body" id="wallTopics"></div>
+          <div class="wp-foot" onclick="navigateTo('trends')">See topic trends →</div>
+        </div>
 
-          <div class="wall-panel">
-            <div class="wp-head">
-              <h4>Where it's coming from</h4>
-              <span class="wp-sub">Which outlets are talking about us</span>
-            </div>
-            <div class="wp-body" id="wallSources"></div>
+        <div class="wall-panel">
+          <div class="wp-head">
+            <h4>Where it's coming from</h4>
+            <span class="wp-sub">Which outlets are talking about us</span>
           </div>
+          <div class="wp-body" id="wallSources"></div>
+        </div>
+      </div>
 
-          <div class="wall-panel">
-            <div class="wp-head">
-              <h4>Ask a question</h4>
-              <span class="wp-sub">Plain English — no special wording needed</span>
-            </div>
-            <div class="wp-body" style="padding:12px 14px;">
-              <div class="wall-ask" onclick="wallAsk('Tell me my day')">What's happening today?</div>
-              <div class="wall-ask" onclick="wallAsk('Top stories worth my time')">What's worth my time?</div>
-              <div class="wall-ask" onclick="wallAsk(&quot;What's next?&quot;)">What should I do next?</div>
-              <div class="wall-ask" onclick="wallAsk('Any negative coverage?')">Is anything bad happening?</div>
-            </div>
-          </div>
+      <div class="wall-zone-label">Ask Signal directly</div>
+      <div class="wall-ask-bar">
+        <span class="wp-sub" style="display:block;margin-bottom:10px;">Plain English — no special wording needed</span>
+        <div class="wall-ask-row">
+          <div class="wall-ask" onclick="wallAsk('Tell me my day')">What's happening today?</div>
+          <div class="wall-ask" onclick="wallAsk('Top stories worth my time')">What's worth my time?</div>
+          <div class="wall-ask" onclick="wallAsk(&quot;What's next?&quot;)">What should I do next?</div>
+          <div class="wall-ask" onclick="wallAsk('Any negative coverage?')">Is anything bad happening?</div>
         </div>
       </div>
 
